@@ -215,7 +215,7 @@ class LiquidGlassPill extends StatelessWidget {
       child: content,
     );
 
-    // Delicate 0.85px hairline border for pill
+    // Delicate 0.85px hairline border for pill with soft ambient shadow
     pill = Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
@@ -223,6 +223,20 @@ class LiquidGlassPill extends StatelessWidget {
           color: effectiveBorderColor,
           width: 0.85,
         ),
+        boxShadow: [
+          if (isSelected)
+            BoxShadow(
+              color: primary.withValues(alpha: isDark ? 0.35 : 0.20),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            )
+          else if (!isDark)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+        ],
       ),
       child: pill,
     );

@@ -160,7 +160,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           final isDoi = tx.type.toLowerCase().contains('doi') ||
               tx.serviceName.toLowerCase().contains('doi');
           if (!isDoi) return false;
-        } else if (_selectedType == 'ganti_pdf') {
+        } else if (_selectedType == 'ganti_pdf' || _selectedType == 'replace_pdf') {
           final isGantiPdf = tx.type.toLowerCase().contains('pdf') ||
               tx.serviceName.toLowerCase().contains('pdf');
           if (!isGantiPdf) return false;
@@ -208,13 +208,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
 
   int get _displayTotalTransactions {
-    if (_selectedPeriod == 'all' &&
-        _selectedType == 'all' &&
-        _searchQuery.trim().isEmpty &&
-        _totalTransactions > 0) {
-      return _totalTransactions;
+    if (_searchQuery.trim().isNotEmpty) {
+      if (_totalTransactions > 0 && _filteredTransactions.length == _transactions.length) {
+        return _totalTransactions;
+      }
+      return _filteredTransactions.length;
     }
-    return _filteredTransactions.length;
+    return _totalTransactions > 0 ? _totalTransactions : _filteredTransactions.length;
   }
 
 
@@ -374,9 +374,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
                         // Quick Filter Chips Bar (LiquidGlassPill Style matching Payouts)
                         SizedBox(
-                          height: 34,
+                          height: 44,
                           child: ListView(
                             scrollDirection: Axis.horizontal,
+                            clipBehavior: Clip.none,
+                            padding: const EdgeInsets.symmetric(vertical: 4),
                             physics: const BouncingScrollPhysics(),
                             children: [
                               if (_selectedPeriod == 'year' && _selectedYear != null) ...[
@@ -412,7 +414,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                               const SizedBox(width: 8),
                               _buildQuickChip('DOI', _selectedType == 'doi_addon', () => _onTypeChanged(_selectedType == 'doi_addon' ? 'all' : 'doi_addon'), isDark),
                               const SizedBox(width: 8),
-                              _buildQuickChip('Ganti PDF', _selectedType == 'ganti_pdf', () => _onTypeChanged(_selectedType == 'ganti_pdf' ? 'all' : 'ganti_pdf'), isDark),
+                              _buildQuickChip('Ganti PDF', _selectedType == 'replace_pdf' || _selectedType == 'ganti_pdf', () => _onTypeChanged((_selectedType == 'replace_pdf' || _selectedType == 'ganti_pdf') ? 'all' : 'replace_pdf'), isDark),
                             ],
                           ),
                         ),
@@ -671,7 +673,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     return LiquidGlassPill(
       isSelected: isSelected,
       onTap: onTap,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
       child: Text(
         label,
         style: TextStyle(
@@ -1143,7 +1144,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                             Navigator.pop(ctx);
                             _onTypeChanged(val);
                           }, isDark),
-                          _buildModalFilterChip('Ganti PDF', 'ganti_pdf', _selectedType, (val) {
+                          _buildModalFilterChip('Ganti PDF', 'replace_pdf', (_selectedType == 'ganti_pdf' ? 'replace_pdf' : _selectedType), (val) {
                             Navigator.pop(ctx);
                             _onTypeChanged(val);
                           }, isDark),

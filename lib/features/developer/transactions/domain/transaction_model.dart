@@ -129,6 +129,7 @@ class TransactionItem {
               case 'doi_addon':
               case 'doi':
                 return 'Tambah DOI';
+              case 'replace_pdf':
               case 'ganti_pdf':
                 return 'Ganti PDF';
               case 'publication':
@@ -146,6 +147,7 @@ class TransactionItem {
         case 'doi_addon':
         case 'doi':
           return 'Tambah DOI';
+        case 'replace_pdf':
         case 'ganti_pdf':
           return 'Ganti PDF';
         case 'fast_track':
