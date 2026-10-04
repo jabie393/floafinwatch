@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'domain/transaction_model.dart';
+import 'transactions_skeleton.dart';
 
 final transactionsProvider = FutureProvider<List<TransactionItem>>((ref) async {
   final repo = ref.watch(dashboardRepositoryProvider);
@@ -493,11 +494,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
                 // Transactions List or States
                 if (_isLoading)
-                  const SliverFillRemaining(
-                    child: Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
-                    ),
-                  )
+                  TransactionsListSkeleton(isDark: isDark)
                 else if (_errorMessage != null)
                   SliverFillRemaining(
                     child: Center(

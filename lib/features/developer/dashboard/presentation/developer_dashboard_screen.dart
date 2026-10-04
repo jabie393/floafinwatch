@@ -55,10 +55,7 @@ class DeveloperDashboardScreen extends ConsumerWidget {
                 // Content body
                 SliverToBoxAdapter(
                   child: dashboardAsync.when(
-                    loading: () => const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 18),
-                      child: DashboardSkeleton(),
-                    ),
+                    loading: () => const DashboardSkeleton(),
                     error: (error, _) =>
                         _buildErrorView(context, ref, error, isDark),
                     data: (data) => _buildDashboardContent(
@@ -271,21 +268,6 @@ class DeveloperDashboardScreen extends ConsumerWidget {
 
           // Payout Terbaru Preview Section
           _buildRecentPayoutsSection(context, recentPayouts, isDark),
-          const SizedBox(height: 24),
-
-          // Footer
-          Center(
-            child: Text(
-              'Terakhir diperbarui: ${DateFormatter.formatTimestamp(data.lastUpdated)}',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: isDark
-                    ? AppColors.textMutedDark
-                    : AppColors.textMutedLight,
-              ),
-            ),
-          ),
           const SizedBox(height: 100),
         ],
       ),

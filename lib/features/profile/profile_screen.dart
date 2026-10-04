@@ -189,6 +189,17 @@ class ProfileScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     _ThemeOptionTile(
+                      title: 'Otomatis (Ikuti Sistem)',
+                      subtitle: 'Menyesuaikan otomatis dengan pengaturan perangkat',
+                      icon: Icons.brightness_auto_rounded,
+                      isSelected: themeMode == ThemeMode.system,
+                      onTap: () {
+                        ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.system);
+                      },
+                      isDark: isDark,
+                    ),
+                    const Divider(height: 1),
+                    _ThemeOptionTile(
                       title: 'Mode Gelap (Dark Mode)',
                       subtitle: 'Warna latar gelap, nyaman di mata saat malam',
                       icon: Icons.dark_mode_rounded,
@@ -206,17 +217,6 @@ class ProfileScreen extends ConsumerWidget {
                       isSelected: themeMode == ThemeMode.light,
                       onTap: () {
                         ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.light);
-                      },
-                      isDark: isDark,
-                    ),
-                    const Divider(height: 1),
-                    _ThemeOptionTile(
-                      title: 'Otomatis (Ikuti Sistem)',
-                      subtitle: 'Menyesuaikan otomatis dengan pengaturan perangkat',
-                      icon: Icons.brightness_auto_rounded,
-                      isSelected: themeMode == ThemeMode.system,
-                      onTap: () {
-                        ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.system);
                       },
                       isDark: isDark,
                     ),

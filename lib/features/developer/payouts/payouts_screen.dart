@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'domain/payout_model.dart';
+import 'payouts_skeleton.dart';
 
 final payoutsProvider = FutureProvider<List<PayoutItem>>((ref) async {
   final repo = ref.watch(dashboardRepositoryProvider);
@@ -884,14 +885,7 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
 
                 // Payouts List / States
                 if (_isLoading)
-                  const SliverFillRemaining(
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.2,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  )
+                  PayoutsListSkeleton(isDark: isDark)
                 else if (_errorMessage != null)
                   SliverFillRemaining(
                     child: Center(

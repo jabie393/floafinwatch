@@ -1,3 +1,5 @@
+import 'package:floafinwatch/core/storage/secure_storage_service.dart';
+import 'package:floafinwatch/core/theme/theme_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -12,9 +14,29 @@ void main() async {
     // Graceful fallback for environments without runtime shader compilation
   }
   await initializeDateFormatting('id_ID', null);
+
+  ThemeMode initialThemeMode = ThemeMode.system;
+  try {
+    final storage = SecureStorageService();
+    final savedThemeStr = await storage.getThemeMode();
+    if (savedThemeStr != null) {
+      initialThemeMode = switch (savedThemeStr) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        'system' => ThemeMode.system,
+        _ => ThemeMode.system,
+      };
+    }
+  } catch (_) {
+    // Default fallback is system
+  }
+
   runApp(
-    const ProviderScope(
-      child: LoafinwatchApp(),
+    ProviderScope(
+      overrides: [
+        initialThemeModeProvider.overrideWithValue(initialThemeMode),
+      ],
+      child: const LoafinwatchApp(),
     ),
   );
 }

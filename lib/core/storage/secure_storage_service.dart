@@ -11,6 +11,8 @@ class SecureStorageService {
   static const String _keyToken = 'auth_access_token';
   static const String _keyUser = 'auth_user_cache';
 
+  static const String _keyThemeMode = 'app_theme_mode';
+
   SecureStorageService({FlutterSecureStorage? storage})
       : _storage = storage ??
             const FlutterSecureStorage(
@@ -41,7 +43,17 @@ class SecureStorageService {
     await _storage.delete(key: _keyUser);
   }
 
+  Future<void> saveThemeMode(String mode) async {
+    await _storage.write(key: _keyThemeMode, value: mode);
+  }
+
+  Future<String?> getThemeMode() async {
+    return await _storage.read(key: _keyThemeMode);
+  }
+
   Future<void> clearAll() async {
-    await _storage.deleteAll();
+    // Only clear authentication session data, keeping device settings like theme intact
+    await deleteToken();
+    await deleteUserCache();
   }
 }
