@@ -4,6 +4,7 @@ import 'package:floafinwatch/core/theme/theme_notifier.dart';
 import 'package:floafinwatch/core/widgets/liquid_glass.dart';
 import 'package:floafinwatch/features/auth/presentation/auth_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -265,13 +266,6 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const Divider(height: 16),
                     _InfoRow(
-                      label: 'Base API URL',
-                      value: AppConfig.baseUrl,
-                      isDark: isDark,
-                      isMonospace: true,
-                    ),
-                    const Divider(height: 16),
-                    _InfoRow(
                       label: 'Aplikasi',
                       value: 'F Loafinwatch v1.0.0',
                       isDark: isDark,
@@ -282,55 +276,227 @@ class ProfileScreen extends ConsumerWidget {
                       value: 'CIB Production / Beta',
                       isDark: isDark,
                     ),
+                    const Divider(height: 18),
+                    _InfoRow(
+                      label: 'Base API URL',
+                      value: AppConfig.baseUrl,
+                      isDark: isDark,
+                      isMonospace: true,
+                      isStacked: true,
+                      onCopy: () {
+                        Clipboard.setData(const ClipboardData(text: AppConfig.baseUrl));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text(
+                              'Base API URL berhasil disalin',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
 
               // Logout Button
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isDark ? const Color(0xFF7F1D1D) : AppColors.error,
-                  foregroundColor: Colors.white,
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => _showLogoutConfirmation(context, isDark, ref),
+                child: Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFDC2626), Color(0xFFB91C1C)],
+                    ),
                     borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFB91C1C).withValues(alpha: 0.28),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.logout_rounded, size: 19, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text(
+                        'Keluar dari Akun',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                icon: const Icon(Icons.logout_rounded, size: 20),
-                label: const Text(
-                  'Keluar dari Akun',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                ),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Konfirmasi Logout'),
-                      content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: const Text('Batal'),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            ref.read(authNotifierProvider.notifier).logout();
-                          },
-                          child: const Text('Keluar'),
-                        ),
-                      ],
-                    ),
-                  );
-                },
               ),
               const SizedBox(height: 100),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void _showLogoutConfirmation(BuildContext context, bool isDark, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return LiquidGlassModalSheet(
+          maxHeightRatio: 0.65,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 6, 22, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 54,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF7F1D1D).withValues(alpha: 0.3)
+                        : const Color(0xFFFEF2F2),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDark
+                          ? const Color(0xFF991B1B).withValues(alpha: 0.5)
+                          : const Color(0xFFFECACA),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.logout_rounded,
+                      size: 24,
+                      color: isDark
+                          ? const Color(0xFFFCA5A5)
+                          : const Color(0xFFB91C1C),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  'Konfirmasi Logout',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                    color: isDark
+                        ? AppColors.textPrimaryDark
+                        : AppColors.textPrimaryLight,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'Apakah Anda yakin ingin keluar dari sesi akun aplikasi F Loafinwatch?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.45,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () => Navigator.pop(ctx),
+                        child: Container(
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.08)
+                                : Colors.black.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.12)
+                                  : Colors.black.withValues(alpha: 0.08),
+                              width: 1,
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Batal',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? AppColors.textPrimaryDark
+                                    : AppColors.textPrimaryLight,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          ref.read(authNotifierProvider.notifier).logout();
+                        },
+                        child: Container(
+                          height: 46,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFDC2626), Color(0xFFB91C1C)],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFB91C1C)
+                                    .withValues(alpha: 0.28),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'Ya, Keluar Akun',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -420,6 +586,8 @@ class _InfoRow extends StatelessWidget {
   final Widget? valueWidget;
   final bool isDark;
   final bool isMonospace;
+  final bool isStacked;
+  final VoidCallback? onCopy;
 
   const _InfoRow({
     required this.label,
@@ -427,12 +595,90 @@ class _InfoRow extends StatelessWidget {
     this.valueWidget,
     required this.isDark,
     this.isMonospace = false,
+    this.isStacked = false,
+    this.onCopy,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (isStacked) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                ),
+              ),
+              if (onCopy != null)
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: onCopy,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.copy_rounded,
+                          size: 13,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          'Salin',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.3)
+                  : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.06),
+                width: 0.9,
+              ),
+            ),
+            child: SelectableText(
+              value ?? '',
+              style: TextStyle(
+                fontSize: 11.5,
+                fontFamily: isMonospace ? 'monospace' : null,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
+                color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           label,
@@ -441,16 +687,21 @@ class _InfoRow extends StatelessWidget {
             color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
           ),
         ),
+        const SizedBox(width: 12),
         if (valueWidget != null)
-          valueWidget!
+          Flexible(child: valueWidget!)
         else
-          Text(
-            value ?? '',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              fontFamily: isMonospace ? 'monospace' : null,
-              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+          Flexible(
+            child: Text(
+              value ?? '',
+              textAlign: TextAlign.right,
+              softWrap: true,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                fontFamily: isMonospace ? 'monospace' : null,
+                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              ),
             ),
           ),
       ],

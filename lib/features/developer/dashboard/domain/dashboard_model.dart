@@ -4,6 +4,8 @@ class FinancialSummary {
   final int pendingPayout;
   final int todayEarned;
   final int unpaidPayoutCount;
+  final int waitingPayoutCount;
+  final int waitingConfirmationCount;
 
   const FinancialSummary({
     required this.totalEarned,
@@ -11,6 +13,8 @@ class FinancialSummary {
     required this.pendingPayout,
     required this.todayEarned,
     this.unpaidPayoutCount = 0,
+    this.waitingPayoutCount = 0,
+    this.waitingConfirmationCount = 0,
   });
 
   factory FinancialSummary.fromJson(Map<String, dynamic> json) {
@@ -27,6 +31,8 @@ class FinancialSummary {
       pendingPayout: parseInt(json['pending_payout'] ?? json['unpaid_payout_total']),
       todayEarned: parseInt(json['today_earned'] ?? json['dev_unpaid_balance']),
       unpaidPayoutCount: parseInt(json['unpaid_payout_count']),
+      waitingPayoutCount: parseInt(json['waiting_payout_count']),
+      waitingConfirmationCount: parseInt(json['waiting_confirmation_count']),
     );
   }
 
@@ -37,6 +43,8 @@ class FinancialSummary {
       'pending_payout': pendingPayout,
       'today_earned': todayEarned,
       'unpaid_payout_count': unpaidPayoutCount,
+      'waiting_payout_count': waitingPayoutCount,
+      'waiting_confirmation_count': waitingConfirmationCount,
     };
   }
 }

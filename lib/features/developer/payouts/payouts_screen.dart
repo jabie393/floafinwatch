@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:floafinwatch/core/constants/app_colors.dart';
 import 'package:floafinwatch/core/utils/currency_formatter.dart';
@@ -54,12 +55,67 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
     });
   }
 
+  OverlayEntry? _currentToastEntry;
+
   @override
   void dispose() {
+    if (_currentToastEntry != null && _currentToastEntry!.mounted) {
+      _currentToastEntry!.remove();
+    }
+    _currentToastEntry = null;
     _searchDebounce?.cancel();
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _showIosTopNotification({
+    required String title,
+    required String message,
+    required IconData icon,
+    required Color iconColor,
+    Duration duration = const Duration(milliseconds: 3200),
+  }) {
+    if (!mounted) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (_currentToastEntry != null && _currentToastEntry!.mounted) {
+      _currentToastEntry!.remove();
+    }
+    _currentToastEntry = null;
+
+    final overlay = Overlay.of(context, rootOverlay: true);
+    late OverlayEntry entry;
+
+    entry = OverlayEntry(
+      builder: (ctx) => _IosTopToastWidget(
+        title: title,
+        message: message,
+        icon: icon,
+        iconColor: iconColor,
+        isDark: isDark,
+        onDismiss: () {
+          if (entry.mounted) {
+            entry.remove();
+          }
+          if (_currentToastEntry == entry) {
+            _currentToastEntry = null;
+          }
+        },
+      ),
+    );
+
+    _currentToastEntry = entry;
+    overlay.insert(entry);
+
+    Timer(duration, () {
+      if (_currentToastEntry == entry) {
+        if (entry.mounted) {
+          entry.remove();
+        }
+        _currentToastEntry = null;
+      }
+    });
   }
 
   void _onScroll() {
@@ -665,7 +721,29 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                               ),
                               const SizedBox(width: 8),
                               _buildQuickChip(
-                                'Berhasil',
+                                'Konfirmasi',
+                                _selectedStatus == 'waiting_confirmation',
+                                () => _onStatusChanged(
+                                  _selectedStatus == 'waiting_confirmation'
+                                      ? 'all'
+                                      : 'waiting_confirmation',
+                                ),
+                                isDark,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildQuickChip(
+                                'Pending',
+                                _selectedStatus == 'waiting_payout',
+                                () => _onStatusChanged(
+                                  _selectedStatus == 'waiting_payout'
+                                      ? 'all'
+                                      : 'waiting_payout',
+                                ),
+                                isDark,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildQuickChip(
+                                'Selesai',
                                 _selectedStatus == 'completed',
                                 () => _onStatusChanged(
                                   _selectedStatus == 'completed'
@@ -676,12 +754,12 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                               ),
                               const SizedBox(width: 8),
                               _buildQuickChip(
-                                'Pending',
-                                _selectedStatus == 'pending',
+                                'Ditolak',
+                                _selectedStatus == 'rejected',
                                 () => _onStatusChanged(
-                                  _selectedStatus == 'pending'
+                                  _selectedStatus == 'rejected'
                                       ? 'all'
-                                      : 'pending',
+                                      : 'rejected',
                                 ),
                                 isDark,
                               ),
@@ -1024,8 +1102,9 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
     String value,
     String currentValue,
     ValueChanged<String> onSelected,
-    bool isDark,
-  ) {
+    bool isDark, {
+    Color? dotColor,
+  }) {
     final isSelected = value == currentValue;
     return InkWell(
       borderRadius: BorderRadius.circular(10),
@@ -1049,16 +1128,97 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
             width: 1,
           ),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected
-                ? Colors.white
-                : (isDark
-                      ? AppColors.textPrimaryDark
-                      : AppColors.textPrimaryLight),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (dotColor != null) ...[
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : dotColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModalResetButton({
+    required VoidCallback onTap,
+    required bool isDark,
+    bool isEnabled = true,
+  }) {
+    final activeBg = isDark
+        ? const Color(0xFF2563EB).withValues(alpha: 0.18)
+        : const Color(0xFFEFF6FF);
+    final activeBorder = isDark
+        ? const Color(0xFF3B82F6).withValues(alpha: 0.35)
+        : const Color(0xFF2563EB).withValues(alpha: 0.25);
+    final activeColor = isDark
+        ? const Color(0xFF60A5FA)
+        : const Color(0xFF2563EB);
+
+    final disabledBg = isDark
+        ? Colors.white.withValues(alpha: 0.04)
+        : Colors.black.withValues(alpha: 0.03);
+    final disabledBorder = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : Colors.black.withValues(alpha: 0.05);
+    final disabledColor = isDark
+        ? AppColors.textMutedDark.withValues(alpha: 0.45)
+        : AppColors.textMutedLight.withValues(alpha: 0.55);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: isEnabled ? onTap : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: isEnabled ? activeBg : disabledBg,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isEnabled ? activeBorder : disabledBorder,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.rotate_left_rounded,
+                size: 13,
+                color: isEnabled ? activeColor : disabledColor,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'Reset',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: isEnabled ? FontWeight.w700 : FontWeight.w500,
+                  color: isEnabled ? activeColor : disabledColor,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1092,6 +1252,10 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final hasActiveFilter = _selectedPeriod != 'all' ||
+                _selectedYear != null ||
+                _selectedStatus != 'all';
+
             return LiquidGlassModalSheet(
               maxHeightRatio: 0.88,
               child: SingleChildScrollView(
@@ -1113,30 +1277,107 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                                 : AppColors.textPrimaryLight,
                           ),
                         ),
-                        if (_selectedPeriod != 'all' || _selectedYear != null)
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                              setState(() {
-                                _selectedPeriod = 'all';
-                                _selectedYear = null;
-                                _selectedMonth = null;
-                              });
-                              _fetchPayouts(reset: true);
-                            },
-                            child: const Text(
-                              'Reset',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
+                        _buildModalResetButton(
+                          isEnabled: hasActiveFilter,
+                          isDark: isDark,
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            setState(() {
+                              _selectedPeriod = 'all';
+                              _selectedYear = null;
+                              _selectedMonth = null;
+                              _selectedStatus = 'all';
+                            });
+                            _fetchPayouts(reset: true);
+                          },
+                        ),
                       ],
                     ),
                     const SizedBox(height: 14),
 
-                    // 1. Preset Periode
+                    // 1. Status Payout Filter
+                    Text(
+                      'Status Payout',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildModalFilterChip(
+                          'Semua',
+                          'all',
+                          _selectedStatus,
+                          (val) {
+                            Navigator.pop(ctx);
+                            _onStatusChanged(val);
+                          },
+                          isDark,
+                        ),
+                        _buildModalFilterChip(
+                          'Konfirmasi',
+                          'waiting_confirmation',
+                          _selectedStatus,
+                          (val) {
+                            Navigator.pop(ctx);
+                            _onStatusChanged(val);
+                          },
+                          isDark,
+                          dotColor: isDark
+                              ? const Color(0xFF60A5FA)
+                              : const Color(0xFF2563EB),
+                        ),
+                        _buildModalFilterChip(
+                          'Pending',
+                          'waiting_payout',
+                          _selectedStatus,
+                          (val) {
+                            Navigator.pop(ctx);
+                            _onStatusChanged(val);
+                          },
+                          isDark,
+                          dotColor: isDark
+                              ? const Color(0xFFFBBF24)
+                              : const Color(0xFFD97706),
+                        ),
+                        _buildModalFilterChip(
+                          'Selesai',
+                          'completed',
+                          _selectedStatus,
+                          (val) {
+                            Navigator.pop(ctx);
+                            _onStatusChanged(val);
+                          },
+                          isDark,
+                          dotColor: isDark
+                              ? const Color(0xFF34D399)
+                              : const Color(0xFF15803D),
+                        ),
+                        _buildModalFilterChip(
+                          'Ditolak',
+                          'rejected',
+                          _selectedStatus,
+                          (val) {
+                            Navigator.pop(ctx);
+                            _onStatusChanged(val);
+                          },
+                          isDark,
+                          dotColor: isDark
+                              ? const Color(0xFFFCA5A5)
+                              : const Color(0xFFB91C1C),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+
+                    // 2. Preset Periode
                     Text(
                       'Preset Periode',
                       style: TextStyle(
@@ -1550,58 +1791,101 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
 
   Map<String, dynamic> _getStatusConfig(String status, bool isDark) {
     switch (status) {
-      case 'confirmed':
+      case 'waiting_payout':
+      case 'pending':
+      case 'processing':
         return {
-          'label': 'DITERIMA',
-          'shortLabel': 'Berhasil',
-          'bgColor': isDark ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7),
+          'label': 'Menunggu Pembayaran',
+          'shortLabel': 'Pending',
+          'icon': Icons.hourglass_top_rounded,
+          'bgColor': isDark
+              ? const Color(0xFF78350F).withValues(alpha: 0.45)
+              : const Color(0xFFFEF3C7),
           'borderColor': isDark
-              ? const Color(0xFF065F46)
-              : const Color(0xFF86EFAC),
+              ? const Color(0xFFD97706).withValues(alpha: 0.4)
+              : const Color(0xFFFDE68A),
           'textColor': isDark
-              ? const Color(0xFF6EE7B7)
-              : const Color(0xFF15803D),
-        };
-      case 'completed':
-        return {
-          'label': 'SELESAI',
-          'shortLabel': 'Selesai',
-          'bgColor': isDark ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7),
-          'borderColor': isDark
-              ? const Color(0xFF065F46)
-              : const Color(0xFF86EFAC),
-          'textColor': isDark
-              ? const Color(0xFF6EE7B7)
-              : const Color(0xFF15803D),
+              ? const Color(0xFFFBBF24)
+              : const Color(0xFFD97706),
         };
       case 'waiting_confirmation':
         return {
-          'label': 'MENUNGGU KONFIRMASI DEV',
-          'shortLabel': 'Menunggu Konfirmasi',
-          'bgColor': isDark ? const Color(0xFF78350F) : const Color(0xFFFEF3C7),
+          'label': 'Menunggu Konfirmasi',
+          'shortLabel': 'Konfirmasi',
+          'icon': Icons.pending_actions_rounded,
+          'bgColor': isDark
+              ? const Color(0xFF1E3A8A).withValues(alpha: 0.45)
+              : const Color(0xFFDBEAFE),
           'borderColor': isDark
-              ? const Color(0xFF92400E)
-              : const Color(0xFFFDE68A),
+              ? const Color(0xFF3B82F6).withValues(alpha: 0.4)
+              : const Color(0xFFBFDBFE),
           'textColor': isDark
-              ? const Color(0xFFFCD34D)
-              : const Color(0xFFB45309),
+              ? const Color(0xFF60A5FA)
+              : const Color(0xFF2563EB),
+        };
+      case 'confirmed':
+      case 'completed':
+        return {
+          'label': 'Dikonfirmasi Diterima',
+          'shortLabel': 'Selesai',
+          'icon': Icons.check_circle_rounded,
+          'bgColor': isDark
+              ? const Color(0xFF064E3B).withValues(alpha: 0.45)
+              : const Color(0xFFDCFCE7),
+          'borderColor': isDark
+              ? const Color(0xFF059669).withValues(alpha: 0.45)
+              : const Color(0xFF86EFAC),
+          'textColor': isDark
+              ? const Color(0xFF34D399)
+              : const Color(0xFF15803D),
         };
       case 'rejected':
+      case 'failed':
         return {
-          'label': 'DITOLAK / BELUM MASUK',
+          'label': 'Ditolak',
           'shortLabel': 'Ditolak',
-          'bgColor': isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFEE2E2),
+          'icon': Icons.cancel_outlined,
+          'bgColor': isDark
+              ? const Color(0xFF7F1D1D).withValues(alpha: 0.25)
+              : const Color(0xFFFEF2F2),
           'borderColor': isDark
-              ? const Color(0xFF991B1B)
-              : const Color(0xFFFCA5A5),
+              ? const Color(0xFF991B1B).withValues(alpha: 0.45)
+              : const Color(0xFFFECACA),
           'textColor': isDark
               ? const Color(0xFFFCA5A5)
               : const Color(0xFFB91C1C),
         };
       default:
+        final normalized = status.toLowerCase().replaceAll(' ', '_');
+        if (normalized.contains('payout') ||
+            normalized.contains('wait') ||
+            normalized.contains('pend') ||
+            normalized.contains('proc')) {
+          return {
+            'label': 'Menunggu Pembayaran',
+            'shortLabel': 'Pending',
+            'icon': Icons.hourglass_top_rounded,
+            'bgColor': isDark
+                ? const Color(0xFF78350F).withValues(alpha: 0.45)
+                : const Color(0xFFFEF3C7),
+                'borderColor': isDark
+                ? const Color(0xFFD97706).withValues(alpha: 0.4)
+                : const Color(0xFFFDE68A),
+            'textColor': isDark
+                ? const Color(0xFFFBBF24)
+                : const Color(0xFFD97706),
+          };
+        }
+        final clean = status.replaceAll('_', ' ').trim();
+        final short = clean.length > 10 ? '${clean.substring(0, 8)}..' : clean;
         return {
-          'label': status.toUpperCase(),
-          'shortLabel': 'Pending',
+          'label': short.isNotEmpty
+              ? short[0].toUpperCase() + short.substring(1).toLowerCase()
+              : 'Pending',
+          'shortLabel': short.isNotEmpty
+              ? short[0].toUpperCase() + short.substring(1).toLowerCase()
+              : 'Pending',
+          'icon': Icons.hourglass_top_rounded,
           'bgColor': isDark
               ? Colors.white.withValues(alpha: 0.08)
               : const Color(0xFFF1F5F9),
@@ -1616,79 +1900,103 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
   }
 
   Future<void> _confirmPayoutAction(PayoutItem po) async {
+    BuildContext? dialogContext;
     try {
       showDialog(
         context: context,
+        useRootNavigator: true,
         barrierDismissible: false,
-        builder: (_) => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        builder: (dCtx) {
+          dialogContext = dCtx;
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          );
+        },
       );
 
       final repo = ref.read(dashboardRepositoryProvider);
       final success = await repo.confirmPayout(po.id);
 
+      if (dialogContext != null && dialogContext!.mounted) {
+        Navigator.of(dialogContext!).pop();
+      } else if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
       if (!mounted) return;
-      Navigator.pop(context); // close loading dialog
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payout ${po.payoutNo} telah berhasil dikonfirmasi!'),
-            backgroundColor: const Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
-          ),
+        _showIosTopNotification(
+          title: 'Konfirmasi Berhasil',
+          message: 'Payout ${po.payoutNo} telah berhasil dikonfirmasi!',
+          icon: Icons.check_circle_rounded,
+          iconColor: const Color(0xFF2563EB),
         );
         _fetchPayouts(reset: true);
       }
     } catch (e) {
+      if (dialogContext != null && dialogContext!.mounted) {
+        Navigator.of(dialogContext!).pop();
+      } else if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
       if (!mounted) return;
-      Navigator.pop(context); // close loading dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal konfirmasi: $e'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
+      _showIosTopNotification(
+        title: 'Gagal Konfirmasi',
+        message: '$e',
+        icon: Icons.error_outline_rounded,
+        iconColor: const Color(0xFFB91C1C),
       );
     }
   }
 
   Future<void> _rejectPayoutAction(PayoutItem po, String reason) async {
+    BuildContext? dialogContext;
     try {
       showDialog(
         context: context,
+        useRootNavigator: true,
         barrierDismissible: false,
-        builder: (_) => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        builder: (dCtx) {
+          dialogContext = dCtx;
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          );
+        },
       );
 
       final repo = ref.read(dashboardRepositoryProvider);
       final success = await repo.rejectPayout(po.id, reason);
 
+      if (dialogContext != null && dialogContext!.mounted) {
+        Navigator.of(dialogContext!).pop();
+      } else if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+
       if (!mounted) return;
-      Navigator.pop(context); // close loading dialog
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Laporan penolakan payout ${po.payoutNo} terkirim.'),
-            backgroundColor: const Color(0xFFDC2626),
-            behavior: SnackBarBehavior.floating,
-          ),
+        _showIosTopNotification(
+          title: 'Laporan Penolakan Terkirim',
+          message: 'Laporan penolakan payout ${po.payoutNo} telah terkirim.',
+          icon: Icons.cancel_outlined,
+          iconColor: const Color(0xFFB91C1C),
         );
         _fetchPayouts(reset: true);
       }
     } catch (e) {
+      if (dialogContext != null && dialogContext!.mounted) {
+        Navigator.of(dialogContext!).pop();
+      } else if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
       if (!mounted) return;
-      Navigator.pop(context); // close loading dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal mengirim laporan: $e'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-        ),
+      _showIosTopNotification(
+        title: 'Gagal Mengirim Laporan',
+        message: '$e',
+        icon: Icons.error_outline_rounded,
+        iconColor: const Color(0xFFB91C1C),
       );
     }
   }
@@ -1711,10 +2019,10 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                   width: 54,
                   height: 54,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                    color: const Color(0xFF2563EB).withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                      color: const Color(0xFF2563EB).withValues(alpha: 0.3),
                       width: 1.5,
                     ),
                   ),
@@ -1722,7 +2030,7 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                     child: Icon(
                       Icons.check_circle_rounded,
                       size: 30,
-                      color: Color(0xFF10B981),
+                      color: Color(0xFF2563EB),
                     ),
                   ),
                 ),
@@ -1803,12 +2111,12 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                           height: 46,
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF10B981), Color(0xFF059669)],
+                              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                             ),
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF10B981)
+                                color: const Color(0xFF2563EB)
                                     .withValues(alpha: 0.35),
                                 blurRadius: 10,
                                 offset: const Offset(0, 3),
@@ -1864,20 +2172,20 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEF4444)
-                              .withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFB91C1C).withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFFEF4444)
-                                .withValues(alpha: 0.3),
+                            color: const Color(0xFFB91C1C)
+                                .withValues(alpha: 0.25),
                             width: 1.2,
                           ),
                         ),
                         child: const Center(
                           child: Icon(
                             Icons.report_problem_rounded,
-                            size: 20,
-                            color: Color(0xFFEF4444),
+                            size: 19,
+                            color: Color(0xFFB91C1C),
                           ),
                         ),
                       ),
@@ -2014,13 +2322,11 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                           onTap: () {
                             final reason = reasonController.text.trim();
                             if (reason.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Alasan penolakan wajib diisi.',
-                                  ),
-                                  backgroundColor: Color(0xFFDC2626),
-                                ),
+                              _showIosTopNotification(
+                                title: 'Perhatian',
+                                message: 'Alasan penolakan wajib diisi.',
+                                icon: Icons.info_outline_rounded,
+                                iconColor: const Color(0xFFD97706),
                               );
                               return;
                             }
@@ -2031,15 +2337,15 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                             height: 46,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                                colors: [Color(0xFFDC2626), Color(0xFFB91C1C)],
                               ),
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFEF4444)
-                                      .withValues(alpha: 0.35),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 3),
+                                  color: const Color(0xFFB91C1C)
+                                      .withValues(alpha: 0.25),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
@@ -2069,8 +2375,7 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
 
   void _showPayoutDetailModal(PayoutItem po, bool isDark) {
     final statusConfig = _getStatusConfig(po.status, isDark);
-    final canTakeAction =
-        po.status == 'waiting_confirmation' || po.status == 'waiting_payout';
+    final canTakeAction = po.status == 'waiting_confirmation';
 
     showModalBottomSheet(
       context: context,
@@ -2146,7 +2451,7 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                       const SizedBox(height: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
+                          horizontal: 10,
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
@@ -2157,14 +2462,28 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                             width: 0.8,
                           ),
                         ),
-                        child: Text(
-                          'STATUS: ${statusConfig['label']}',
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
-                            color: statusConfig['textColor'] as Color,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 5.5,
+                              height: 5.5,
+                              decoration: BoxDecoration(
+                                color: statusConfig['textColor'] as Color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              statusConfig['shortLabel'] as String,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                                color: statusConfig['textColor'] as Color,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -2202,7 +2521,9 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                             : 'Payout Otomatis Hak Developer',
                         isDark,
                       ),
-                      if (po.rejectionReason != null &&
+                      if ((po.status == 'rejected' ||
+                              po.status == 'failed') &&
+                          po.rejectionReason != null &&
                           po.rejectionReason!.isNotEmpty) ...[
                         _buildDetailDivider(isDark),
                         _buildDetailRow(
@@ -2216,7 +2537,55 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                   ),
                 ),
 
-                // Actions if pending / waiting confirmation
+                // Information notice if waiting for admin payout
+                if (po.status == 'waiting_payout') ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF78350F).withValues(alpha: 0.25)
+                          : const Color(0xFFFEF3C7).withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFFD97706).withValues(alpha: 0.35)
+                            : const Color(0xFFFDE68A),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.hourglass_top_rounded,
+                          size: 18,
+                          color: isDark
+                              ? const Color(0xFFFBBF24)
+                              : const Color(0xFFD97706),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Menunggu admin jurnal memproses dan mentransfer dana ke rekening Anda.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1.4,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? const Color(0xFFFDE68A)
+                                  : const Color(0xFF92400E),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                // Actions if waiting confirmation (Admin has transferred, Dev confirms)
                 if (canTakeAction) ...[
                   const SizedBox(height: 18),
                   Row(
@@ -2232,14 +2601,15 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                             height: 46,
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? const Color(0xFFEF4444)
-                                        .withValues(alpha: 0.16)
-                                  : const Color(0xFFFEE2E2),
+                                  ? const Color(0xFF7F1D1D)
+                                      .withValues(alpha: 0.2)
+                                  : const Color(0xFFFEF2F2),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: isDark
                                     ? const Color(0xFF991B1B)
-                                    : const Color(0xFFFCA5A5),
+                                        .withValues(alpha: 0.45)
+                                    : const Color(0xFFFECACA),
                                 width: 1,
                               ),
                             ),
@@ -2251,7 +2621,7 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                                   fontWeight: FontWeight.w700,
                                   color: isDark
                                       ? const Color(0xFFFCA5A5)
-                                      : const Color(0xFFDC2626),
+                                      : const Color(0xFFB91C1C),
                                 ),
                               ),
                             ),
@@ -2270,12 +2640,12 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                             height: 46,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [Color(0xFF10B981), Color(0xFF059669)],
+                                colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
                               ),
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF10B981)
+                                  color: const Color(0xFF2563EB)
                                       .withValues(alpha: 0.35),
                                   blurRadius: 10,
                                   offset: const Offset(0, 3),
@@ -2363,10 +2733,8 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
   }
 
   Widget _buildPayoutCard(PayoutItem po, bool isDark) {
-    final isCompleted = po.status == 'confirmed' || po.status == 'completed';
     final statusConfig = _getStatusConfig(po.status, isDark);
-    final canTakeAction =
-        po.status == 'waiting_confirmation' || po.status == 'waiting_payout';
+    final canTakeAction = po.status == 'waiting_confirmation';
 
     return Material(
       color: Colors.transparent,
@@ -2387,34 +2755,20 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: isCompleted
-                          ? (isDark
-                                ? const Color(0xFF064E3B)
-                                : AppColors.emeraldBg)
-                          : (isDark
-                                ? const Color(0xFF78350F)
-                                : AppColors.amberBg),
+                      color: statusConfig['bgColor'] as Color,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Colors.white.withValues(
-                          alpha: isDark ? 0.15 : 0.8,
+                        color: (statusConfig['borderColor'] as Color).withValues(
+                          alpha: isDark ? 0.4 : 0.6,
                         ),
                         width: 1.2,
                       ),
                     ),
                     child: Center(
                       child: Icon(
-                        isCompleted
-                            ? Icons.check_circle_outline_rounded
-                            : Icons.hourglass_top_rounded,
-                        size: 18,
-                        color: isCompleted
-                            ? (isDark
-                                  ? AppColors.emeraldDarkText
-                                  : AppColors.emeraldText)
-                            : (isDark
-                                  ? AppColors.amberDarkText
-                                  : AppColors.amberText),
+                        statusConfig['icon'] as IconData,
+                        size: 17,
+                        color: statusConfig['textColor'] as Color,
                       ),
                     ),
                   ),
@@ -2472,23 +2826,38 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
-                          vertical: 2,
+                          vertical: 3,
                         ),
                         decoration: BoxDecoration(
                           color: statusConfig['bgColor'] as Color,
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: statusConfig['borderColor'] as Color,
                             width: 0.8,
                           ),
                         ),
-                        child: Text(
-                          statusConfig['shortLabel'] as String,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: statusConfig['textColor'] as Color,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 4.5,
+                              height: 4.5,
+                              decoration: BoxDecoration(
+                                color: statusConfig['textColor'] as Color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              statusConfig['shortLabel'] as String,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                                color: statusConfig['textColor'] as Color,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -2552,13 +2921,13 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: isDark
-                              ? const Color(0xFF7F1D1D).withValues(alpha: 0.3)
-                              : const Color(0xFFFEE2E2),
+                              ? const Color(0xFF7F1D1D).withValues(alpha: 0.2)
+                              : const Color(0xFFFEF2F2),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: isDark
-                                ? const Color(0xFF991B1B)
-                                : const Color(0xFFFCA5A5),
+                                ? const Color(0xFF991B1B).withValues(alpha: 0.45)
+                                : const Color(0xFFFECACA),
                             width: 0.8,
                           ),
                         ),
@@ -2570,7 +2939,7 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                               size: 13,
                               color: isDark
                                   ? const Color(0xFFFCA5A5)
-                                  : const Color(0xFFDC2626),
+                                  : const Color(0xFFB91C1C),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -2580,7 +2949,7 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                                 fontWeight: FontWeight.w700,
                                 color: isDark
                                     ? const Color(0xFFFCA5A5)
-                                    : const Color(0xFFDC2626),
+                                    : const Color(0xFFB91C1C),
                               ),
                             ),
                           ],
@@ -2597,11 +2966,11 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF10B981),
+                          color: const Color(0xFF2563EB),
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF10B981)
+                              color: const Color(0xFF2563EB)
                                   .withValues(alpha: 0.3),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
@@ -2633,6 +3002,188 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                 ),
               ],
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _IosTopToastWidget extends StatefulWidget {
+  final String title;
+  final String message;
+  final IconData icon;
+  final Color iconColor;
+  final bool isDark;
+  final VoidCallback onDismiss;
+
+  const _IosTopToastWidget({
+    required this.title,
+    required this.message,
+    required this.icon,
+    required this.iconColor,
+    required this.isDark,
+    required this.onDismiss,
+  });
+
+  @override
+  State<_IosTopToastWidget> createState() => _IosTopToastWidgetState();
+}
+
+class _IosTopToastWidgetState extends State<_IosTopToastWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  bool _isDismissing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+      reverseDuration: const Duration(milliseconds: 260),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, -0.65),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+      reverseCurve: Curves.easeInBack,
+    ));
+
+    _controller.forward();
+  }
+
+  Future<void> _dismiss() async {
+    if (_isDismissing) return;
+    _isDismissing = true;
+    if (mounted) {
+      await _controller.reverse();
+    }
+    widget.onDismiss();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Positioned(
+      top: topPadding + 10,
+      left: 16,
+      right: 16,
+      child: Material(
+        color: Colors.transparent,
+        child: GestureDetector(
+          onVerticalDragEnd: (details) {
+            if (details.primaryVelocity != null && details.primaryVelocity! < 0) {
+              _dismiss();
+            }
+          },
+          onTap: _dismiss,
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: widget.isDark
+                          ? const Color(0xFF1E293B).withValues(alpha: 0.88)
+                          : Colors.white.withValues(alpha: 0.94),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: widget.isDark
+                            ? Colors.white.withValues(alpha: 0.14)
+                            : Colors.black.withValues(alpha: 0.08),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: widget.isDark ? 0.35 : 0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: widget.iconColor.withValues(alpha: 0.14),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: widget.iconColor.withValues(alpha: 0.28),
+                              width: 1,
+                            ),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              widget.icon,
+                              size: 20,
+                              color: widget.iconColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                widget.title,
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -0.2,
+                                  color: widget.isDark
+                                      ? AppColors.textPrimaryDark
+                                      : AppColors.textPrimaryLight,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                widget.message,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  height: 1.3,
+                                  color: widget.isDark
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondaryLight,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),

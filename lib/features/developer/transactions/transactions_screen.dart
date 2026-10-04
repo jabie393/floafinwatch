@@ -726,6 +726,71 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     );
   }
 
+  Widget _buildModalResetButton({
+    required VoidCallback onTap,
+    required bool isDark,
+    bool isEnabled = true,
+  }) {
+    final activeBg = isDark
+        ? const Color(0xFF2563EB).withValues(alpha: 0.18)
+        : const Color(0xFFEFF6FF);
+    final activeBorder = isDark
+        ? const Color(0xFF3B82F6).withValues(alpha: 0.35)
+        : const Color(0xFF2563EB).withValues(alpha: 0.25);
+    final activeColor = isDark
+        ? const Color(0xFF60A5FA)
+        : const Color(0xFF2563EB);
+
+    final disabledBg = isDark
+        ? Colors.white.withValues(alpha: 0.04)
+        : Colors.black.withValues(alpha: 0.03);
+    final disabledBorder = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : Colors.black.withValues(alpha: 0.05);
+    final disabledColor = isDark
+        ? AppColors.textMutedDark.withValues(alpha: 0.45)
+        : AppColors.textMutedLight.withValues(alpha: 0.55);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: isEnabled ? onTap : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: isEnabled ? activeBg : disabledBg,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isEnabled ? activeBorder : disabledBorder,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.rotate_left_rounded,
+                size: 13,
+                color: isEnabled ? activeColor : disabledColor,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'Reset',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: isEnabled ? FontWeight.w700 : FontWeight.w500,
+                  color: isEnabled ? activeColor : disabledColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showFilterSheet(BuildContext context, bool isDark) {
     final currentYear = DateTime.now().year;
     int tempYear = _selectedYear ?? currentYear;
@@ -743,6 +808,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final hasActiveFilter = _selectedPeriod != 'all' ||
+                _selectedType != 'all' ||
+                _selectedYear != null;
+
             return LiquidGlassModalSheet(
               maxHeightRatio: 0.88,
               child: SingleChildScrollView(
@@ -764,20 +833,20 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                   : AppColors.textPrimaryLight,
                             ),
                           ),
-                          if (_selectedPeriod != 'all' || _selectedType != 'all' || _selectedYear != null)
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                setState(() {
-                                  _selectedPeriod = 'all';
-                                  _selectedYear = null;
-                                  _selectedMonth = null;
-                                  _selectedType = 'all';
-                                });
-                                _fetchTransactions(reset: true);
-                              },
-                              child: const Text('Reset', style: TextStyle(fontSize: 12, color: AppColors.primary)),
-                            ),
+                          _buildModalResetButton(
+                            isEnabled: hasActiveFilter,
+                            isDark: isDark,
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              setState(() {
+                                _selectedPeriod = 'all';
+                                _selectedYear = null;
+                                _selectedMonth = null;
+                                _selectedType = 'all';
+                              });
+                              _fetchTransactions(reset: true);
+                            },
+                          ),
                         ],
                       ),
                       const SizedBox(height: 14),

@@ -301,7 +301,12 @@ class HeroFinancialCard extends StatelessWidget {
                   amountColor: amberColor,
                   subWidget: Text(
                     summary.pendingPayout > 0
-                        ? '${summary.unpaidPayoutCount} Tagihan pending'
+                        ? (summary.waitingConfirmationCount > 0 &&
+                                summary.waitingPayoutCount > 0
+                            ? '${summary.waitingPayoutCount} pending, ${summary.waitingConfirmationCount} konfirmasi'
+                            : (summary.waitingConfirmationCount > 0
+                                ? '${summary.waitingConfirmationCount} perlu konfirmasi'
+                                : '${summary.unpaidPayoutCount} tagihan pending'))
                         : 'Dana belum dicairkan',
                     style: TextStyle(
                       fontSize: 10,

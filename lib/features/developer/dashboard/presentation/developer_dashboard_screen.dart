@@ -562,114 +562,251 @@ class DeveloperDashboardScreen extends ConsumerWidget {
             ),
           )
         else
-          ...previewList.map((po) => _buildPayoutPreviewItem(po, isDark)),
+          ...previewList.map(
+            (po) => _buildPayoutPreviewItem(context, po, isDark),
+          ),
       ],
     );
   }
 
-  Widget _buildPayoutPreviewItem(PayoutItem po, bool isDark) {
-    final isCompleted = po.status == 'confirmed' || po.status == 'completed';
+  Map<String, dynamic> _getPayoutStatusConfig(String status, bool isDark) {
+    switch (status) {
+      case 'waiting_payout':
+      case 'pending':
+      case 'processing':
+        return {
+          'label': 'Menunggu Pembayaran',
+          'shortLabel': 'Pending',
+          'icon': Icons.hourglass_top_rounded,
+          'bgColor': isDark
+              ? const Color(0xFF78350F).withValues(alpha: 0.45)
+              : const Color(0xFFFEF3C7),
+          'borderColor': isDark
+              ? const Color(0xFFD97706).withValues(alpha: 0.4)
+              : const Color(0xFFFDE68A),
+          'textColor': isDark
+              ? const Color(0xFFFBBF24)
+              : const Color(0xFFD97706),
+        };
+      case 'waiting_confirmation':
+        return {
+          'label': 'Menunggu Konfirmasi',
+          'shortLabel': 'Konfirmasi',
+          'icon': Icons.pending_actions_rounded,
+          'bgColor': isDark
+              ? const Color(0xFF1E3A8A).withValues(alpha: 0.45)
+              : const Color(0xFFDBEAFE),
+          'borderColor': isDark
+              ? const Color(0xFF3B82F6).withValues(alpha: 0.4)
+              : const Color(0xFFBFDBFE),
+          'textColor': isDark
+              ? const Color(0xFF60A5FA)
+              : const Color(0xFF2563EB),
+        };
+      case 'confirmed':
+      case 'completed':
+        return {
+          'label': 'Dikonfirmasi Diterima',
+          'shortLabel': 'Selesai',
+          'icon': Icons.check_circle_rounded,
+          'bgColor': isDark
+              ? const Color(0xFF064E3B).withValues(alpha: 0.45)
+              : const Color(0xFFDCFCE7),
+          'borderColor': isDark
+              ? const Color(0xFF059669).withValues(alpha: 0.45)
+              : const Color(0xFF86EFAC),
+          'textColor': isDark
+              ? const Color(0xFF34D399)
+              : const Color(0xFF15803D),
+        };
+      case 'rejected':
+      case 'failed':
+        return {
+          'label': 'Ditolak',
+          'shortLabel': 'Ditolak',
+          'icon': Icons.cancel_outlined,
+          'bgColor': isDark
+              ? const Color(0xFF7F1D1D).withValues(alpha: 0.25)
+              : const Color(0xFFFEF2F2),
+          'borderColor': isDark
+              ? const Color(0xFF991B1B).withValues(alpha: 0.45)
+              : const Color(0xFFFECACA),
+          'textColor': isDark
+              ? const Color(0xFFFCA5A5)
+              : const Color(0xFFB91C1C),
+        };
+      default:
+        final normalized = status.toLowerCase().replaceAll(' ', '_');
+        if (normalized.contains('payout') ||
+            normalized.contains('wait') ||
+            normalized.contains('pend') ||
+            normalized.contains('proc')) {
+          return {
+            'label': 'Menunggu Pembayaran',
+            'shortLabel': 'Pending',
+            'icon': Icons.hourglass_top_rounded,
+            'bgColor': isDark
+                ? const Color(0xFF78350F).withValues(alpha: 0.45)
+                : const Color(0xFFFEF3C7),
+            'borderColor': isDark
+                ? const Color(0xFFD97706).withValues(alpha: 0.4)
+                : const Color(0xFFFDE68A),
+            'textColor': isDark
+                ? const Color(0xFFFBBF24)
+                : const Color(0xFFD97706),
+          };
+        }
+        final clean = status.replaceAll('_', ' ').trim();
+        final short = clean.length > 10 ? '${clean.substring(0, 8)}..' : clean;
+        return {
+          'label': short.isNotEmpty
+              ? short[0].toUpperCase() + short.substring(1).toLowerCase()
+              : 'Pending',
+          'shortLabel': short.isNotEmpty
+              ? short[0].toUpperCase() + short.substring(1).toLowerCase()
+              : 'Pending',
+          'icon': Icons.hourglass_top_rounded,
+          'bgColor': isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : const Color(0xFFF1F5F9),
+          'borderColor': isDark
+              ? Colors.white.withValues(alpha: 0.12)
+              : const Color(0xFFE2E8F0),
+          'textColor': isDark
+              ? AppColors.textSecondaryDark
+              : const Color(0xFF475569),
+        };
+    }
+  }
 
-    return LiquidGlass(
-      borderRadius: 18,
-      blur: 16,
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isCompleted
-                  ? (isDark ? const Color(0xFF064E3B) : AppColors.emeraldBg)
-                  : (isDark ? const Color(0xFF78350F) : AppColors.amberBg),
-              borderRadius: BorderRadius.circular(10),
+  Widget _buildPayoutPreviewItem(
+    BuildContext context,
+    PayoutItem po,
+    bool isDark,
+  ) {
+    final statusConfig = _getPayoutStatusConfig(po.status, isDark);
+
+    return InkWell(
+      onTap: () => context.go('/dev/payouts'),
+      borderRadius: BorderRadius.circular(18),
+      child: LiquidGlass(
+        borderRadius: 18,
+        blur: 16,
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: statusConfig['bgColor'] as Color,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: (statusConfig['borderColor'] as Color).withValues(
+                    alpha: isDark ? 0.4 : 0.6,
+                  ),
+                  width: 1.2,
+                ),
+              ),
+              child: Center(
+                child: Icon(
+                  statusConfig['icon'] as IconData,
+                  size: 17,
+                  color: statusConfig['textColor'] as Color,
+                ),
+              ),
             ),
-            child: Icon(
-              isCompleted ? Icons.check_circle_rounded : Icons.pending_rounded,
-              size: 18,
-              color: isCompleted
-                  ? (isDark ? AppColors.emeraldDarkText : AppColors.emeraldText)
-                  : (isDark ? AppColors.amberDarkText : AppColors.amberText),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    po.payoutNo,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    po.notes ?? DateFormatter.formatDate(po.createdAt),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  po.payoutNo,
+                  CurrencyFormatter.formatRupiah(po.amount),
                   style: TextStyle(
+                    fontFamily: 'monospace',
                     fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     color: isDark
-                        ? AppColors.textPrimaryDark
-                        : AppColors.textPrimaryLight,
+                        ? AppColors.emeraldDarkText
+                        : AppColors.emeraldText,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  po.notes ?? DateFormatter.formatDate(po.createdAt),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isDark
-                        ? AppColors.textMutedDark
-                        : AppColors.textMutedLight,
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7.5,
+                    vertical: 3,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  decoration: BoxDecoration(
+                    color: statusConfig['bgColor'] as Color,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: statusConfig['borderColor'] as Color,
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 4.5,
+                        height: 4.5,
+                        decoration: BoxDecoration(
+                          color: statusConfig['textColor'] as Color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        statusConfig['shortLabel'] as String,
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                          color: statusConfig['textColor'] as Color,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                CurrencyFormatter.formatRupiah(po.amount),
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: isCompleted
-                      ? (isDark
-                            ? AppColors.emeraldDarkText
-                            : AppColors.emeraldText)
-                      : (isDark
-                            ? AppColors.amberDarkText
-                            : AppColors.amberText),
-                ),
-              ),
-              const SizedBox(height: 3),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isCompleted
-                      ? (isDark ? const Color(0xFF064E3B) : AppColors.emeraldBg)
-                      : (isDark ? const Color(0xFF78350F) : AppColors.amberBg),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  isCompleted ? 'Berhasil' : 'Menunggu Payout',
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    color: isCompleted
-                        ? (isDark
-                              ? AppColors.emeraldDarkText
-                              : AppColors.emeraldText)
-                        : (isDark
-                              ? AppColors.amberDarkText
-                              : AppColors.amberText),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
