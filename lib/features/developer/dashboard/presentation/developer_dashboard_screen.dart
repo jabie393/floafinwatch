@@ -349,12 +349,16 @@ class DeveloperDashboardScreen extends ConsumerWidget {
             ),
           )
         else
-          ...previewList.map((tx) => _buildTransactionPreviewItem(tx, isDark)),
+          ...previewList.map((tx) => _buildTransactionPreviewItem(context, tx, isDark)),
       ],
     );
   }
 
-  Widget _buildTransactionPreviewItem(TransactionItem tx, bool isDark) {
+  Widget _buildTransactionPreviewItem(
+    BuildContext context,
+    TransactionItem tx,
+    bool isDark,
+  ) {
     return Tooltip(
       message: tx.payerName,
       preferBelow: false,
@@ -388,11 +392,14 @@ class DeveloperDashboardScreen extends ConsumerWidget {
         color: Colors.white,
         height: 1.3,
       ),
-      child: LiquidGlass(
-        borderRadius: 18,
-        blur: 16,
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(14),
+      child: InkWell(
+        onTap: () => context.go('/dev/transactions'),
+        borderRadius: BorderRadius.circular(18),
+        child: LiquidGlass(
+          borderRadius: 18,
+          blur: 16,
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(14),
         child: Row(
           children: [
             Container(
@@ -466,8 +473,9 @@ class DeveloperDashboardScreen extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildRecentPayoutsSection(
     BuildContext context,
