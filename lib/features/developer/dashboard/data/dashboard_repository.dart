@@ -84,24 +84,73 @@ class DashboardRepository {
     return res.items;
   }
 
-  Future<List<PayoutItem>> fetchPayouts({int page = 1}) async {
+  Future<PaginatedPayoutsResponse> fetchPayoutsPaginated({
+    int page = 1,
+    int perPage = 20,
+    String period = 'all',
+    int? year,
+    int? month,
+    String? status,
+    String? search,
+  }) async {
     try {
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'per_page': perPage,
+        'period': period,
+      };
+      if (year != null) {
+        queryParams['year'] = year;
+      }
+      if (month != null) {
+        queryParams['month'] = month;
+      }
+      if (status != null && status.isNotEmpty && status != 'all') {
+        queryParams['status'] = status;
+      }
+      if (search != null && search.trim().isNotEmpty) {
+        queryParams['search'] = search.trim();
+      }
+
       final response = await dio.get(
         AppEndpoints.developerPayouts,
-        queryParameters: {'page': page},
+        queryParameters: queryParams,
       );
 
       final data = response.data;
-      if (data is! Map<String, dynamic>) return [];
-
-      final rawList = data['data'] is Map<String, dynamic>
-          ? data['data']['data']
-          : data['data'];
-
-      if (rawList is List) {
-        return rawList.map((e) => PayoutItem.fromJson(e as Map<String, dynamic>)).toList();
+      if (data is! Map<String, dynamic>) {
+        return const PaginatedPayoutsResponse(items: []);
       }
-      return [];
+
+      return PaginatedPayoutsResponse.fromJson(data);
+    } on DioException catch (e) {
+      throw AppException.fromDioError(e);
+    }
+  }
+
+  Future<List<PayoutItem>> fetchPayouts({int page = 1}) async {
+    final res = await fetchPayoutsPaginated(page: page);
+    return res.items;
+  }
+
+  Future<bool> confirmPayout(int payoutId) async {
+    try {
+      final response = await dio.post(AppEndpoints.developerConfirmPayout(payoutId));
+      final data = response.data;
+      return data is Map<String, dynamic> && data['success'] == true;
+    } on DioException catch (e) {
+      throw AppException.fromDioError(e);
+    }
+  }
+
+  Future<bool> rejectPayout(int payoutId, String reason) async {
+    try {
+      final response = await dio.post(
+        AppEndpoints.developerRejectPayout(payoutId),
+        data: {'rejection_reason': reason},
+      );
+      final data = response.data;
+      return data is Map<String, dynamic> && data['success'] == true;
     } on DioException catch (e) {
       throw AppException.fromDioError(e);
     }

@@ -54,9 +54,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
+        navigatorContainerBuilder: (context, navigationShell, children) {
+          return MainNavigationShell(
+            navigationShell: navigationShell,
+            children: children,
+          );
+        },
         builder: (context, state, navigationShell) {
-          return MainNavigationShell(navigationShell: navigationShell);
+          return navigationShell;
         },
         branches: [
           StatefulShellBranch(

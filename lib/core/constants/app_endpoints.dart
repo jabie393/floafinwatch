@@ -9,6 +9,8 @@ class AppEndpoints {
   static const String developerDashboard = '/developer/dashboard';
   static const String developerTransactions = '/developer/transactions';
   static const String developerPayouts = '/developer/payouts';
+  static String developerConfirmPayout(int id) => '/developer/payouts/$id/confirm';
+  static String developerRejectPayout(int id) => '/developer/payouts/$id/reject';
   static const String developerAnalytics = '/developer/analytics';
   static const String developerNotifications = '/developer/notifications';
 }

@@ -349,26 +349,30 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // 2 Liquid Glass Metric Cards (Total Transaksi & Periode)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _MetricMiniCard(
-                                title: 'Total Transaksi',
-                                value: '$_displayTotalTransactions Transaksi',
-                                isDark: isDark,
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: _MetricMiniCard(
+                                  title: 'Total Transaksi',
+                                  value: '$_displayTotalTransactions Transaksi',
+                                  isDark: isDark,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: _MetricMiniCard(
-                                title: 'Periode',
-                                value: _getPeriodLabel(),
-                                isDark: isDark,
-                                trailingIcon: Icons.tune_rounded,
-                                onTap: () => _showFilterSheet(context, isDark),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _MetricMiniCard(
+                                  title: 'Periode',
+                                  value: _getPeriodLabel(),
+                                  isDark: isDark,
+                                  trailingIcon: Icons.tune_rounded,
+                                  isActive: (_selectedPeriod != 'all' || _selectedYear != null || _selectedMonth != null || _selectedType != 'all'),
+                                  onTap: () => _showFilterSheet(context, isDark),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 12),
 
@@ -435,6 +439,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                   : AppColors.textPrimaryLight,
                             ),
                             decoration: InputDecoration(
+                              filled: false,
+                              fillColor: Colors.transparent,
                               isDense: true,
                               hintText: 'Cari transaksi, invoice, pembayar...',
                               hintStyle: TextStyle(
@@ -737,41 +743,14 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            return Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.88,
-              ),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0F172A) : Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.12)
-                      : Colors.black.withValues(alpha: 0.08),
-                  width: 1,
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 36,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.2)
-                                : Colors.black.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+            return LiquidGlassModalSheet(
+              maxHeightRatio: 0.88,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -1153,12 +1132,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                     ],
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      },
-    );
+              );
+            },
+          );
+        },
+      );
   }
 
   Widget _buildTransactionCard(TransactionItem tx, bool isDark) {
@@ -1195,9 +1173,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         color: Colors.white,
         height: 1.3,
       ),
-      child: LiquidGlass(
+      child: LiquidGlassCard(
         borderRadius: 18,
-        blur: 16,
         padding: const EdgeInsets.all(14),
         onTap: () => _showTransactionDetail(context, tx, isDark),
         child: Column(
@@ -1376,49 +1353,25 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.12)
-                : Colors.black.withValues(alpha: 0.08),
-            width: 1,
-          ),
-        ),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-        child: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.2)
-                          : Colors.black.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
+      builder: (context) => LiquidGlassModalSheet(
+        maxHeightRatio: 0.88,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Detail Transaksi Hak Dev',
+                style: TextStyle(
+                  fontSize: 16.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  'Detail Transaksi Hak Dev',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.3,
-                    color: isDark
-                        ? AppColors.textPrimaryDark
-                        : AppColors.textPrimaryLight,
-                  ),
-                ),
+              ),
                 const SizedBox(height: 14),
                 _buildDetailRow(
                   'Order ID',
@@ -1474,8 +1427,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   Widget _buildDetailRow(
@@ -1525,6 +1477,7 @@ class _MetricMiniCard extends StatelessWidget {
   final String value;
   final bool isDark;
   final IconData? trailingIcon;
+  final bool isActive;
   final VoidCallback? onTap;
 
   const _MetricMiniCard({
@@ -1532,17 +1485,90 @@ class _MetricMiniCard extends StatelessWidget {
     required this.value,
     required this.isDark,
     this.trailingIcon,
+    this.isActive = false,
     this.onTap,
   });
 
+  Widget _buildValueWidget(BuildContext context) {
+    if (value.startsWith('Rp')) {
+      return Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: 'Rp ',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.emeraldDarkText : AppColors.emeraldText,
+              ),
+            ),
+            TextSpan(
+              text: value.replaceFirst('Rp ', '').replaceFirst('Rp', '').trim(),
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+                color: isDark ? AppColors.emeraldDarkText : AppColors.emeraldText,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final regex = RegExp(r'^(\d+)\s+(.+)$');
+    final match = regex.firstMatch(value);
+
+    if (match != null) {
+      final count = match.group(1)!;
+      final unit = match.group(2)!;
+      return Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: count,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              ),
+            ),
+            TextSpan(
+              text: ' $unit',
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w500,
+                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Text(
+      value,
+      style: TextStyle(
+        fontSize: 12.5,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.2,
+        color: isActive
+            ? AppColors.primary
+            : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final card = LiquidGlass(
-      borderRadius: 14,
-      blur: 14,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+    return LiquidGlassCard(
+      borderRadius: 16,
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1551,10 +1577,10 @@ class _MetricMiniCard extends StatelessWidget {
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
                     color: isDark
-                        ? AppColors.textMutedDark
+                        ? AppColors.textSecondaryDark
                         : AppColors.textSecondaryLight,
                   ),
                   maxLines: 1,
@@ -1564,39 +1590,23 @@ class _MetricMiniCard extends StatelessWidget {
               if (trailingIcon != null)
                 Icon(
                   trailingIcon,
-                  size: 13,
-                  color: isDark
-                      ? AppColors.textMutedDark
-                      : AppColors.textSecondaryLight,
+                  size: 14,
+                  color: isActive
+                      ? AppColors.primary
+                      : (isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight),
                 ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           FittedBox(
+            alignment: Alignment.centerLeft,
             fit: BoxFit.scaleDown,
-            child: Text(
-              value,
-              style: TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: isDark
-                    ? AppColors.textPrimaryDark
-                    : AppColors.textPrimaryLight,
-              ),
-            ),
+            child: _buildValueWidget(context),
           ),
         ],
       ),
     );
-
-    if (onTap != null) {
-      return InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: card,
-      );
-    }
-    return card;
   }
 }

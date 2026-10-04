@@ -21,6 +21,18 @@ class DateFormatter {
     return formatter.format(local);
   }
 
+  /// Formats date and time with full month name 'dd MMMM yyyy, HH:mm'
+  static String formatFullDateTime(DateTime? dateTime) {
+    if (dateTime == null) return '-';
+    final local = dateTime.toLocal();
+    try {
+      final formatter = DateFormat('dd MMMM yyyy, HH:mm');
+      return formatter.format(local);
+    } catch (_) {
+      return formatDateTime(dateTime);
+    }
+  }
+
   static String formatDate(DateTime? dateTime) {
     if (dateTime == null) return '-';
     final local = dateTime.toLocal();
