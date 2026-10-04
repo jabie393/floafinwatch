@@ -200,23 +200,23 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const Divider(height: 1),
                     _ThemeOptionTile(
-                      title: 'Mode Gelap (Dark Mode)',
-                      subtitle: 'Warna latar gelap, nyaman di mata saat malam',
-                      icon: Icons.dark_mode_rounded,
-                      isSelected: themeMode == ThemeMode.dark,
-                      onTap: () {
-                        ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.dark);
-                      },
-                      isDark: isDark,
-                    ),
-                    const Divider(height: 1),
-                    _ThemeOptionTile(
                       title: 'Mode Terang (Light Mode)',
                       subtitle: 'Warna latar bersih dan cerah dengan kontras tinggi',
                       icon: Icons.light_mode_rounded,
                       isSelected: themeMode == ThemeMode.light,
                       onTap: () {
                         ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.light);
+                      },
+                      isDark: isDark,
+                    ),
+                    const Divider(height: 1),
+                    _ThemeOptionTile(
+                      title: 'Mode Gelap (Dark Mode)',
+                      subtitle: 'Warna latar gelap, nyaman di mata saat malam',
+                      icon: Icons.dark_mode_rounded,
+                      isSelected: themeMode == ThemeMode.dark,
+                      onTap: () {
+                        ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.dark);
                       },
                       isDark: isDark,
                     ),
