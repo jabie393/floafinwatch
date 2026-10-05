@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:floafinwatch/core/constants/app_colors.dart';
 import 'package:floafinwatch/core/utils/currency_formatter.dart';
 import 'package:floafinwatch/core/utils/date_formatter.dart';
+import 'package:floafinwatch/core/network/reverb_service.dart';
 import 'package:floafinwatch/core/widgets/liquid_glass.dart';
 import 'package:floafinwatch/features/developer/dashboard/data/dashboard_repository.dart';
 import 'package:flutter/material.dart';
@@ -274,6 +275,12 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(realtimeSyncTriggerProvider, (prev, next) {
+      if (prev != next && mounted) {
+        _fetchPayouts(reset: true, isRefresh: true);
+      }
+    });
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(

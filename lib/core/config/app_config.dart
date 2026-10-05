@@ -4,7 +4,7 @@ class AppConfig {
   // Environment configuration via dart-define or defaults
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://loa.jurnalcib.com/api/v1',
+    defaultValue: 'https://loa.jurnalcib.com/api/v1',
   );
 
   static const Duration connectTimeout = Duration(seconds: 15);
@@ -18,12 +18,12 @@ class AppConfig {
 
   static const int reverbPort = int.fromEnvironment(
     'REVERB_PORT',
-    defaultValue: 8080,
+    defaultValue: 443,
   );
 
   static const String reverbScheme = String.fromEnvironment(
     'REVERB_SCHEME',
-    defaultValue: 'http',
+    defaultValue: 'https',
   );
 
   static String get resolvedReverbHost {

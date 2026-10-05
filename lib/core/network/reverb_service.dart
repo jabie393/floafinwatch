@@ -1,14 +1,29 @@
 import 'dart:async';
 import 'dart:developer' as dev;
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_config.dart';
 import '../../features/developer/dashboard/presentation/dashboard_notifier.dart';
 import '../../features/developer/payouts/payouts_screen.dart';
 import '../../features/developer/transactions/transactions_screen.dart';
 
+class RealtimeSyncTriggerNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void trigger() {
+    state++;
+  }
+}
+
+final realtimeSyncTriggerProvider =
+    NotifierProvider<RealtimeSyncTriggerNotifier, int>(RealtimeSyncTriggerNotifier.new);
+
 final reverbServiceProvider = Provider<ReverbService>((ref) {
   final service = ReverbService(ref);
+  service.init();
   ref.onDispose(() {
     service.dispose();
   });
@@ -69,12 +84,14 @@ class ReverbService {
       _channel = _client!.publicChannel('dev-financial');
       _channel!.subscribe();
 
-      _eventSubscription = _channel!.bind('financial.updated').listen((event) {
+      _eventSubscription = _channel!.bindToAll().listen((event) {
         dev.log(
-          'Reverb event received: ${event.data}',
+          'Reverb event received: name=${event.name} data=${event.data}',
           name: 'ReverbService',
         );
-        _triggerRealtimeSync(event.data);
+        if (!event.name.startsWith('pusher:')) {
+          _triggerRealtimeSync(event.data);
+        }
       });
 
       _isInitialized = true;
@@ -93,12 +110,15 @@ class ReverbService {
   }
 
   void _triggerRealtimeSync(dynamic rawData) {
+    debugPrint('⚡ [Reverb Realtime] Event received -> Auto-syncing Dashboard, Transactions & Payouts!');
     dev.log(
       'Triggering auto-sync from Reverb event: $rawData',
       name: 'ReverbService',
     );
     try {
+      HapticFeedback.lightImpact();
       _ref.read(dashboardNotifierProvider.notifier).loadData(isRefresh: true);
+      _ref.read(realtimeSyncTriggerProvider.notifier).trigger();
       _ref.invalidate(transactionsProvider);
       _ref.invalidate(payoutsProvider);
     } catch (e) {

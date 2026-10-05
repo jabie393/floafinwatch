@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:floafinwatch/core/constants/app_colors.dart';
 import 'package:floafinwatch/core/utils/currency_formatter.dart';
 import 'package:floafinwatch/core/utils/date_formatter.dart';
+import 'package:floafinwatch/core/network/reverb_service.dart';
 import 'package:floafinwatch/core/widgets/liquid_glass.dart';
 import 'package:floafinwatch/features/developer/dashboard/data/dashboard_repository.dart';
 import 'package:flutter/material.dart';
@@ -284,6 +285,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(realtimeSyncTriggerProvider, (prev, next) {
+      if (prev != next && mounted) {
+        _fetchTransactions(reset: true, isRefresh: true);
+      }
+    });
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final displayedTransactions = _filteredTransactions;
 
