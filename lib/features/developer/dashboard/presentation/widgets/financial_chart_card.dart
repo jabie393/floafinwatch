@@ -41,15 +41,8 @@ class FinancialChartCard extends ConsumerWidget {
     final maxIdx = length - 1;
 
     if (period == 'year') {
-      if (length <= 6) {
-        return List.generate(length, (i) => i).toSet();
-      }
-      // Show every 2 months: Jan, Mar, Mei, Jul, Sep, Nov
-      final indices = <int>{};
-      for (int i = 0; i <= maxIdx; i += 2) {
-        indices.add(i);
-      }
-      return indices;
+      // Show ALL month names: Jan, Feb, Mar, Apr, Mei, Jun, Jul, Agu, Sep, Okt, Nov, Des
+      return List.generate(length, (i) => i).toSet();
     }
 
     // For 7d, 30d, and month:
@@ -296,6 +289,7 @@ class FinancialChartCard extends ConsumerWidget {
                                 if (!visibleIndices.contains(index)) {
                                   return const SizedBox.shrink();
                                 }
+                                final isYear = selectedPeriod == 'year';
                                 return SideTitleWidget(
                                   meta: meta,
                                   space: 6,
@@ -306,8 +300,9 @@ class FinancialChartCard extends ConsumerWidget {
                                   child: Text(
                                     chartData.labels[index],
                                     style: TextStyle(
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w500,
+                                      fontSize: isYear ? 8.2 : 9.5,
+                                      fontWeight: isYear ? FontWeight.w600 : FontWeight.w500,
+                                      letterSpacing: isYear ? -0.4 : -0.1,
                                       color: isDark
                                           ? AppColors.textMutedDark
                                           : AppColors.textMutedLight,

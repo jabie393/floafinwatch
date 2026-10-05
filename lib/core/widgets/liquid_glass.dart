@@ -158,15 +158,15 @@ class LiquidGlassPill extends StatelessWidget {
 
     final pillColor = isSelected
         ? (isDark
-              ? primary.withValues(alpha: 0.32)
-              : const Color(0xFFE2EDFE).withValues(alpha: 0.95))
+              ? primary.withValues(alpha: 0.35)
+              : const Color(0xFFE2EDFE).withValues(alpha: 0.98))
         : (isDark
-              ? Colors.white.withValues(alpha: 0.06)
-              : Colors.white.withValues(alpha: 0.40));
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.white.withValues(alpha: 0.70));
 
     final effectiveBorderColor = isSelected
-        ? (isDark ? primary.withValues(alpha: 0.55) : Colors.white.withValues(alpha: 0.85))
-        : (isDark ? Colors.white.withValues(alpha: 0.12) : Colors.white.withValues(alpha: 0.50));
+        ? (isDark ? primary.withValues(alpha: 0.65) : primary.withValues(alpha: 0.25))
+        : (isDark ? Colors.white.withValues(alpha: 0.16) : Colors.black.withValues(alpha: 0.06));
 
     Widget content = Padding(
       padding: padding ?? EdgeInsets.zero,
@@ -193,18 +193,29 @@ class LiquidGlassPill extends StatelessWidget {
           width: 0.85,
         ),
         boxShadow: [
-          if (isSelected)
+          if (isSelected) ...[
             BoxShadow(
-              color: primary.withValues(alpha: isDark ? 0.35 : 0.20),
+              color: primary.withValues(alpha: isDark ? 0.40 : 0.25),
               blurRadius: 10,
               offset: const Offset(0, 3),
-            )
-          else if (!isDark)
+            ),
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 6,
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
+          ] else ...[
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.08),
+              blurRadius: 7,
               offset: const Offset(0, 2),
             ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ],
       ),
       child: content,

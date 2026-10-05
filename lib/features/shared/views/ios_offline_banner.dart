@@ -135,18 +135,6 @@ class _IosOfflineBannerState extends ConsumerState<IosOfflineBanner>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Animated Indicator Dot / Icon
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isSuccess
-                        ? const Color(0xFF34D399)
-                        : const Color(0xFFF59E0B),
-                  ),
-                ),
-                const SizedBox(width: 8),
                 Icon(
                   isSuccess ? Icons.wifi_rounded : Icons.wifi_off_rounded,
                   size: 15,
