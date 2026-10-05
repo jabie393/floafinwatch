@@ -293,16 +293,18 @@ class FinancialChartCard extends ConsumerWidget {
                                 return SideTitleWidget(
                                   meta: meta,
                                   space: 6,
-                                  fitInside: SideTitleFitInsideData.fromTitleMeta(
-                                    meta,
-                                    distanceFromEdge: 0,
-                                  ),
+                                  fitInside: isYear
+                                      ? SideTitleFitInsideData.disable()
+                                      : SideTitleFitInsideData.fromTitleMeta(
+                                          meta,
+                                          distanceFromEdge: 0,
+                                        ),
                                   child: Text(
                                     chartData.labels[index],
                                     style: TextStyle(
-                                      fontSize: isYear ? 8.2 : 9.5,
+                                      fontSize: isYear ? 8.0 : 9.5,
                                       fontWeight: isYear ? FontWeight.w600 : FontWeight.w500,
-                                      letterSpacing: isYear ? -0.4 : -0.1,
+                                      letterSpacing: isYear ? -0.3 : -0.1,
                                       color: isDark
                                           ? AppColors.textMutedDark
                                           : AppColors.textMutedLight,

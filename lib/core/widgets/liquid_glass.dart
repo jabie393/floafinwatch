@@ -161,12 +161,12 @@ class LiquidGlassPill extends StatelessWidget {
               ? primary.withValues(alpha: 0.35)
               : const Color(0xFFE2EDFE).withValues(alpha: 0.98))
         : (isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.white.withValues(alpha: 0.70));
+              ? Colors.white.withValues(alpha: 0.07)
+              : Colors.white.withValues(alpha: 0.55));
 
     final effectiveBorderColor = isSelected
-        ? (isDark ? primary.withValues(alpha: 0.65) : primary.withValues(alpha: 0.25))
-        : (isDark ? Colors.white.withValues(alpha: 0.16) : Colors.black.withValues(alpha: 0.06));
+        ? (isDark ? primary.withValues(alpha: 0.60) : primary.withValues(alpha: 0.22))
+        : (isDark ? Colors.white.withValues(alpha: 0.12) : Colors.black.withValues(alpha: 0.04));
 
     Widget content = Padding(
       padding: padding ?? EdgeInsets.zero,
@@ -193,29 +193,18 @@ class LiquidGlassPill extends StatelessWidget {
           width: 0.85,
         ),
         boxShadow: [
-          if (isSelected) ...[
+          if (isSelected)
             BoxShadow(
-              color: primary.withValues(alpha: isDark ? 0.40 : 0.25),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ] else ...[
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.08),
-              blurRadius: 7,
+              color: primary.withValues(alpha: isDark ? 0.35 : 0.18),
+              blurRadius: 8,
               offset: const Offset(0, 2),
-            ),
+            )
+          else
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
-              blurRadius: 2,
-              offset: const Offset(0, 1),
+              color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.045),
+              blurRadius: 5,
+              offset: const Offset(0, 1.5),
             ),
-          ],
         ],
       ),
       child: content,
