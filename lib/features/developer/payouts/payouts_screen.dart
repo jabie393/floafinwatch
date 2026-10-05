@@ -183,7 +183,9 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
       setState(() {
         _isLoading = false;
         _isLoadingMore = false;
-        _errorMessage = e.toString();
+        if (_payouts.isEmpty) {
+          _errorMessage = e.toString();
+        }
       });
     }
   }
@@ -891,9 +893,9 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
                 ),
 
                 // Payouts List / States
-                if (_isLoading)
+                if (_isLoading && _payouts.isEmpty)
                   PayoutsListSkeleton(isDark: isDark)
-                else if (_errorMessage != null)
+                else if (_errorMessage != null && _payouts.isEmpty)
                   SliverFillRemaining(
                     child: Center(
                       child: Padding(

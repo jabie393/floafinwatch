@@ -118,7 +118,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       setState(() {
         _isLoading = false;
         _isLoadingMore = false;
-        if (reset) {
+        if (reset && _transactions.isEmpty) {
           _errorMessage = e.toString();
         }
       });
@@ -500,9 +500,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 ),
 
                 // Transactions List or States
-                if (_isLoading)
+                if (_isLoading && _transactions.isEmpty)
                   TransactionsListSkeleton(isDark: isDark)
-                else if (_errorMessage != null)
+                else if (_errorMessage != null && _filteredTransactions.isEmpty)
                   SliverFillRemaining(
                     child: Center(
                       child: Padding(

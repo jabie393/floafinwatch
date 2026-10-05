@@ -30,12 +30,12 @@ class WidgetService {
       'raw_timestamp': data.lastUpdated?.toIso8601String(),
     };
 
-    await storage.saveUserCache(json.encode(payload));
+    await storage.saveWidgetSnapshot(json.encode(payload));
   }
 
   /// Retrieves the last recorded snapshot for offline widget rendering.
   Future<Map<String, dynamic>?> getLastWidgetSnapshot() async {
-    final raw = await storage.getUserCache();
+    final raw = await storage.getWidgetSnapshot();
     if (raw == null) return null;
     try {
       return json.decode(raw) as Map<String, dynamic>;

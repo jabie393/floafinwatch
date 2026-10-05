@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'ios_offline_banner.dart';
 
 class MainNavigationShell extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -267,6 +268,14 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 ),
               ),
             ),
+          ),
+
+          // Floating iOS Dynamic Island Offline Warning Banner
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 6,
+            left: 0,
+            right: 0,
+            child: const IosOfflineBanner(),
           ),
         ],
       ),

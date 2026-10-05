@@ -1,3 +1,4 @@
+import 'package:floafinwatch/core/errors/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/auth_repository.dart';
 import '../domain/auth_state.dart';
@@ -23,6 +24,12 @@ class AuthNotifier extends Notifier<AuthState> {
         state = AuthState.authenticated(user);
       } else {
         state = AuthState.unauthenticated();
+      }
+    } on AppException catch (e) {
+      if (e.isNetworkError) {
+        state = AuthState.offline(e.message);
+      } else {
+        state = AuthState.unauthenticated(e.message);
       }
     } catch (e) {
       state = AuthState.unauthenticated(e.toString());

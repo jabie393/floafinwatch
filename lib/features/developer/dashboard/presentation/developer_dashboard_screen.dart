@@ -54,18 +54,30 @@ class DeveloperDashboardScreen extends ConsumerWidget {
 
                 // Content body
                 SliverToBoxAdapter(
-                  child: dashboardAsync.when(
-                    loading: () => const DashboardSkeleton(),
-                    error: (error, _) =>
-                        _buildErrorView(context, ref, error, isDark),
-                    data: (data) => _buildDashboardContent(
-                      context,
-                      ref,
-                      authState,
-                      data,
-                      isDark,
-                    ),
-                  ),
+                  child: () {
+                    final data = dashboardAsync.hasValue ? dashboardAsync.value : null;
+                    if (data != null) {
+                      return _buildDashboardContent(
+                        context,
+                        ref,
+                        authState,
+                        data,
+                        isDark,
+                      );
+                    }
+                    if (dashboardAsync.isLoading) {
+                      return const DashboardSkeleton();
+                    }
+                    if (dashboardAsync.hasError) {
+                      return _buildErrorView(
+                        context,
+                        ref,
+                        dashboardAsync.error!,
+                        isDark,
+                      );
+                    }
+                    return const DashboardSkeleton();
+                  }(),
                 ),
               ],
             ),

@@ -5,6 +5,7 @@ enum AuthStatus {
   loading,
   authenticated,
   unauthenticated,
+  offline,
 }
 
 class AuthState {
@@ -21,6 +22,7 @@ class AuthState {
   bool get isAuthenticated => status == AuthStatus.authenticated && user != null;
   bool get isLoading => status == AuthStatus.loading;
   bool get isInitial => status == AuthStatus.initial;
+  bool get isOffline => status == AuthStatus.offline;
 
   AuthState copyWith({
     AuthStatus? status,
@@ -45,6 +47,11 @@ class AuthState {
 
   factory AuthState.unauthenticated([String? message]) => AuthState(
         status: AuthStatus.unauthenticated,
+        errorMessage: message,
+      );
+
+  factory AuthState.offline([String? message]) => AuthState(
+        status: AuthStatus.offline,
         errorMessage: message,
       );
 }

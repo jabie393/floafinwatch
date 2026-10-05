@@ -16,7 +16,7 @@ class DashboardRepository {
 
   DashboardRepository({required this.dio});
 
-  Future<DeveloperDashboardData> fetchDashboardData({String period = '30d'}) async {
+  Future<DeveloperDashboardData> fetchDashboardData({String period = '7d'}) async {
     try {
       final response = await dio.get(
         AppEndpoints.developerDashboard,

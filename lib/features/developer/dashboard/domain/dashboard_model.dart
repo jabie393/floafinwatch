@@ -107,7 +107,7 @@ class FinancialChartData {
     }).toList();
 
     return FinancialChartData(
-      period: json['period']?.toString() ?? '30d',
+      period: json['period']?.toString() ?? '7d',
       labels: labels,
       values: values,
     );

@@ -83,6 +83,8 @@ class AppException implements Exception {
     }
   }
 
+  bool get isNetworkError => statusCode == 408 || statusCode == 503;
+
   @override
   String toString() => message;
 }

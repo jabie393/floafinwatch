@@ -10,6 +10,7 @@ class SecureStorageService {
 
   static const String _keyToken = 'auth_access_token';
   static const String _keyUser = 'auth_user_cache';
+  static const String _keyWidgetSnapshot = 'home_widget_snapshot';
 
   static const String _keyThemeMode = 'app_theme_mode';
 
@@ -41,6 +42,14 @@ class SecureStorageService {
 
   Future<void> deleteUserCache() async {
     await _storage.delete(key: _keyUser);
+  }
+
+  Future<void> saveWidgetSnapshot(String snapshotJson) async {
+    await _storage.write(key: _keyWidgetSnapshot, value: snapshotJson);
+  }
+
+  Future<String?> getWidgetSnapshot() async {
+    return await _storage.read(key: _keyWidgetSnapshot);
   }
 
   Future<void> saveThemeMode(String mode) async {

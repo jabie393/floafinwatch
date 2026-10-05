@@ -88,15 +88,29 @@ class AuthRepository {
 
         final cached = await storage.getUserCache();
         if (cached != null) {
-          return UserModel.fromRawJson(cached);
+          try {
+            final user = UserModel.fromRawJson(cached);
+            if (user.isDeveloper && user.email.isNotEmpty) {
+              return user;
+            }
+          } catch (_) {}
         }
+
+        throw AppException.fromDioError(dioErr);
       }
 
       final cached = await storage.getUserCache();
       if (cached != null) {
-        return UserModel.fromRawJson(cached);
+        try {
+          final user = UserModel.fromRawJson(cached);
+          if (user.isDeveloper && user.email.isNotEmpty) {
+            return user;
+          }
+        } catch (_) {}
       }
       return null;
+    } on AppException {
+      rethrow;
     } catch (_) {
       return null;
     }

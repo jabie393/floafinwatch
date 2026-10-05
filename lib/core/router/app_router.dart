@@ -6,6 +6,7 @@ import 'package:floafinwatch/features/developer/payouts/payouts_screen.dart';
 import 'package:floafinwatch/features/developer/transactions/transactions_screen.dart';
 import 'package:floafinwatch/features/profile/profile_screen.dart';
 import 'package:floafinwatch/features/shared/views/main_navigation_shell.dart';
+import 'package:floafinwatch/features/shared/views/offline_screen.dart';
 import 'package:floafinwatch/features/shared/views/splash_screen.dart';
 import 'package:floafinwatch/features/shared/views/unauthorized_screen.dart';
 import 'package:flutter/material.dart';
@@ -21,25 +22,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isLoggingIn = state.matchedLocation == '/login';
       final isSplash = state.matchedLocation == '/splash';
       final isUnauthorized = state.matchedLocation == '/unauthorized';
+      final isOffline = state.matchedLocation == '/offline';
 
       // 1. Still determining initial session state
       if (authState.isInitial || (authState.isLoading && authState.user == null)) {
         return isSplash ? null : '/splash';
       }
 
-      // 2. Not logged in
+      // 2. Offline / No connection at launch
+      if (authState.isOffline) {
+        return isOffline ? null : '/offline';
+      }
+
+      // 3. Not logged in
       if (!authState.isAuthenticated) {
         return isLoggingIn ? null : '/login';
       }
 
-      // 3. Logged in, check role authorization
+      // 4. Logged in, check role authorization
       final user = authState.user!;
       if (!user.isDeveloper) {
         return isUnauthorized ? null : '/unauthorized';
       }
 
-      // 4. Authenticated developer trying to visit splash or login
-      if (isSplash || isLoggingIn || isUnauthorized) {
+      // 5. Authenticated developer trying to visit splash, login, unauthorized or offline
+      if (isSplash || isLoggingIn || isUnauthorized || isOffline) {
         return '/dev/dashboard';
       }
 
@@ -102,6 +109,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/unauthorized',
         builder: (context, state) => const UnauthorizedScreen(),
+      ),
+      GoRoute(
+        path: '/offline',
+        builder: (context, state) => const OfflineScreen(),
       ),
     ],
   );
