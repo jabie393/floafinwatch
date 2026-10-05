@@ -1,10 +1,12 @@
 import 'package:floafinwatch/core/constants/app_colors.dart';
+import 'package:floafinwatch/core/network/reverb_service.dart';
 import 'package:floafinwatch/core/widgets/liquid_glass.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class MainNavigationShell extends StatefulWidget {
+class MainNavigationShell extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
   final List<Widget>? children;
 
@@ -15,10 +17,11 @@ class MainNavigationShell extends StatefulWidget {
   });
 
   @override
-  State<MainNavigationShell> createState() => _MainNavigationShellState();
+  ConsumerState<MainNavigationShell> createState() =>
+      _MainNavigationShellState();
 }
 
-class _MainNavigationShellState extends State<MainNavigationShell> {
+class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
   PageController? _pageController;
 
   @override
@@ -29,6 +32,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         initialPage: widget.navigationShell.currentIndex,
       );
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(reverbServiceProvider).init();
+    });
   }
 
   @override
