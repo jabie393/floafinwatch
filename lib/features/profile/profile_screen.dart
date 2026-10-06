@@ -3,6 +3,8 @@ import 'package:floafinwatch/core/constants/app_colors.dart';
 import 'package:floafinwatch/core/theme/theme_notifier.dart';
 import 'package:floafinwatch/core/widgets/liquid_glass.dart';
 import 'package:floafinwatch/features/auth/presentation/auth_notifier.dart';
+import 'package:floafinwatch/features/developer/dashboard/presentation/dashboard_notifier.dart';
+import 'package:floafinwatch/features/widgets/presentation/homescreen_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -301,6 +303,77 @@ class ProfileScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 20),
+
+              // Home Screen Widget Section
+              Text(
+                'Widget Layar Utama (Home Screen)',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                ),
+              ),
+              const SizedBox(height: 10),
+              LiquidGlass(
+                borderRadius: 20,
+                blur: 18,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                child: InkWell(
+                  onTap: () => _showWidgetPreviewSheet(context, isDark, ref),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: const Icon(
+                          Icons.widgets_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Widget F Loafinwatch',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Preview widget layar depan dengan data real',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                        size: 22,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
 
               // Logout Button
@@ -346,6 +419,81 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showWidgetPreviewSheet(BuildContext context, bool isDark, WidgetRef ref) {
+    final dashboardAsync = ref.read(dashboardNotifierProvider);
+    final data = dashboardAsync.value;
+
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return LiquidGlassModalSheet(
+          maxHeightRatio: 0.88,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 4),
+                  Text(
+                    'Widget F Loafinwatch',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.3,
+                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Preview widget layar depan (Homescreen) dengan data real',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Preview 1 & 2: Kotak 2x2 berdampingan (Responsive dengan Expanded agar tidak overflow)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: HakDevWidgetView(
+                          data: data,
+                          width: null,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: PayoutWidgetView(
+                          data: data,
+                          width: null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Preview 3: Tren Pencairan 4x2 (Lebar penuh responsive)
+                  TrendChartWidgetView(
+                    data: data,
+                    width: double.infinity,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

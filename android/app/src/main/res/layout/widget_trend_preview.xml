@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/trend_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tren pencairan"
+            android:textColor="#0B3B5C"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/trend_title"
+            android:text="7 hari terakhir"
+            android:textColor="#6C8494"
+            android:textSize="11sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/badge_trend_bg"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            android:text="+12,4%"
+            android:textColor="#0C5D97"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="bottom"
+        android:orientation="horizontal">
+
+        <FrameLayout android:layout_width="0dp" android:layout_height="25dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
+        <FrameLayout android:layout_width="0dp" android:layout_height="35dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
+        <FrameLayout android:layout_width="0dp" android:layout_height="22dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
+        <FrameLayout android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_peak" />
+        <FrameLayout android:layout_width="0dp" android:layout_height="30dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
+        <FrameLayout android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
+        <FrameLayout android:layout_width="0dp" android:layout_height="20dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="30 SEP"
+            android:textColor="#6C8494"
+            android:textSize="9sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="06 OKT"
+            android:textColor="#6C8494"
+            android:textSize="9sp" />
+    </RelativeLayout>
+</LinearLayout>

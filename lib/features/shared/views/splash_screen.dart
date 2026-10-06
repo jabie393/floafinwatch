@@ -14,19 +14,11 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.borderLight),
-              ),
-              child: const Icon(
-                Icons.account_balance_wallet_rounded,
-                color: AppColors.primary,
-                size: 38,
-              ),
+            Image.asset(
+              'assets/images/app_logo.png',
+              width: 96,
+              height: 96,
+              fit: BoxFit.contain,
             ),
             const SizedBox(height: 24),
             Text(

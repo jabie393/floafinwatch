@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+  <background android:drawable="@mipmap/floafinwatch_background"/>
+  <foreground android:drawable="@mipmap/floafinwatch_foreground"/>
+  <monochrome android:drawable="@mipmap/floafinwatch_monochrome"/>
+</adaptive-icon>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">F Loafinwatch</string>
+    <string name="widget_hak_dev_title">Hak Dev (CIB)</string>
+    <string name="widget_hak_dev_desc">Pantau saldo siap cair dan hak developer secara realtime</string>
+    <string name="widget_payout_title">Payout Berikutnya (CIB)</string>
+    <string name="widget_payout_desc">Pantau status payout dan pencairan dana hak developer</string>
+    <string name="widget_trend_title">Tren Pencairan (CIB)</string>
+    <string name="widget_trend_desc">Grafik tren pencairan dana developer 7 hari terakhir</string>
+    <string name="widget_master_title">Ringkasan Developer (CIB)</string>
+    <string name="widget_master_desc">Ringkasan lengkap hak dev, payout, dan grafik tren dalam satu widget</string>
+</resources>
