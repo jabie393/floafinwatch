@@ -3,6 +3,7 @@ import 'dart:developer' as dev;
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_config.dart';
 import 'network_service.dart';
@@ -31,18 +32,22 @@ final reverbServiceProvider = Provider<ReverbService>((ref) {
   return service;
 });
 
-class ReverbService {
+class ReverbService with WidgetsBindingObserver {
   final Ref _ref;
   PusherChannelsClient? _client;
   PublicChannel? _channel;
   StreamSubscription? _eventSubscription;
   StreamSubscription? _lifecycleSubscription;
+  ProviderSubscription<NetworkState>? _networkSubscription;
+  Timer? _reconnectDebounce;
   bool _isInitialized = false;
+  bool _isConnecting = false;
 
   ReverbService(this._ref);
 
   Future<void> init() async {
-    if (_isInitialized) return;
+    if (_isInitialized || _isConnecting) return;
+    _isConnecting = true;
 
     try {
       final host = AppConfig.resolvedReverbHost;
@@ -67,13 +72,12 @@ class ReverbService {
         options: options,
         connectionErrorHandler: (exception, trace, refresh) {
           dev.log(
-            'Reverb connection error: $exception. Retrying...',
+            'Reverb connection error: $exception. Scheduling reconnect...',
             error: exception,
             stackTrace: trace,
             name: 'ReverbService',
           );
-          _ref.read(networkProvider.notifier).reportNetworkDisconnected();
-          refresh();
+          _scheduleReconnect();
         },
       );
 
@@ -97,6 +101,12 @@ class ReverbService {
       });
 
       _isInitialized = true;
+
+      // Register observers only once
+      _setupNetworkObserver();
+      WidgetsBinding.instance.removeObserver(this);
+      WidgetsBinding.instance.addObserver(this);
+
       dev.log(
         'ReverbService initialized and subscribed to dev-financial',
         name: 'ReverbService',
@@ -108,7 +118,52 @@ class ReverbService {
         stackTrace: stack,
         name: 'ReverbService',
       );
+      _scheduleReconnect();
+    } finally {
+      _isConnecting = false;
     }
+  }
+
+  void _setupNetworkObserver() {
+    _networkSubscription?.close();
+    _networkSubscription = _ref.listen<NetworkState>(networkProvider, (prev, next) {
+      if (prev != null && !prev.isOnline && next.isOnline) {
+        dev.log(
+          'Network connection restored -> Auto reconnecting Reverb WebSockets...',
+          name: 'ReverbService',
+        );
+        reconnect();
+        // Also sync any data missed while offline
+        _triggerRealtimeSync(null);
+      }
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      dev.log(
+        'App resumed from background -> Ensuring Reverb connection is alive...',
+        name: 'ReverbService',
+      );
+      reconnect();
+    }
+  }
+
+  void _scheduleReconnect() {
+    _reconnectDebounce?.cancel();
+    _reconnectDebounce = Timer(const Duration(seconds: 3), () {
+      if (_ref.read(networkProvider).isOnline) {
+        reconnect();
+      }
+    });
+  }
+
+  Future<void> reconnect() async {
+    dev.log('Reconnecting ReverbService...', name: 'ReverbService');
+    _cleanupSocket();
+    await Future.delayed(const Duration(milliseconds: 200));
+    await init();
   }
 
   void _triggerRealtimeSync(dynamic rawData) {
@@ -128,16 +183,29 @@ class ReverbService {
     }
   }
 
-  void dispose() {
+  void _cleanupSocket() {
     try {
       _eventSubscription?.cancel();
+      _eventSubscription = null;
       _lifecycleSubscription?.cancel();
+      _lifecycleSubscription = null;
       _channel?.unsubscribe();
+      _channel = null;
       _client?.disconnect();
       _client?.dispose();
+      _client = null;
     } catch (e) {
-      dev.log('Error disposing ReverbService: $e', name: 'ReverbService');
+      dev.log('Error cleaning up socket: $e', name: 'ReverbService');
     }
     _isInitialized = false;
+  }
+
+  void dispose() {
+    _reconnectDebounce?.cancel();
+    _networkSubscription?.close();
+    _networkSubscription = null;
+    WidgetsBinding.instance.removeObserver(this);
+    _cleanupSocket();
+    dev.log('ReverbService disposed', name: 'ReverbService');
   }
 }

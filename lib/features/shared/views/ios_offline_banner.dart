@@ -64,7 +64,7 @@ class _IosOfflineBannerState extends ConsumerState<IosOfflineBanner>
 
       // Silent background refresh & reconnect Reverb
       ref.read(dashboardNotifierProvider.notifier).loadData(isRefresh: true);
-      ref.read(reverbServiceProvider).init();
+      ref.read(reverbServiceProvider).reconnect();
 
       _dismissTimer?.cancel();
       _dismissTimer = Timer(const Duration(milliseconds: 2400), () {
