@@ -7,17 +7,18 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Header: Circle Outline Check Icon -->
     <FrameLayout
         android:layout_width="38dp"
         android:layout_height="38dp"
-        android:background="@drawable/ic_widget_clock_bg">
+        android:background="@drawable/ic_widget_circle_check_bg">
 
         <ImageView
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_widget_clock"
-            android:contentDescription="Icon Clock" />
+            android:src="@drawable/ic_widget_circle_check"
+            android:contentDescription="Icon Check" />
     </FrameLayout>
 
     <FrameLayout
@@ -25,21 +26,23 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <!-- Body: "PAYOUT BERIKUTNYA" & Nominal Besar -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="PAYOUT BERIKUTNYA"
         android:textColor="#6C8494"
         android:textSize="10sp"
+        android:letterSpacing="0.06"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="3dp"
         android:text="Rp 0"
         android:textColor="#0B3B5C"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textStyle="bold" />
 
     <FrameLayout
@@ -47,12 +50,28 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Tidak ada antrean"
-        android:textColor="#8BA2B2"
-        android:textSize="11sp"
-        android:textStyle="bold" />
+    <!-- Footer: "Tidak ada antrean" + Chevron Right -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:text="Tidak ada antrean"
+            android:textColor="#8BA2B2"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_widget_chevron_right"
+            android:contentDescription="Chevron Right" />
+    </RelativeLayout>
 
 </LinearLayout>

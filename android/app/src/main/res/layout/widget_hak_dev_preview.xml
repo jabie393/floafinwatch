@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Header: Official Logo F Loafinwatch -->
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="36dp"
@@ -19,21 +20,23 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <!-- Body: "HAK DEV" & Nominal Besar -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="HAK DEV"
         android:textColor="#6C8494"
-        android:textSize="10sp"
+        android:textSize="10.5sp"
+        android:letterSpacing="0.08"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:text="Rp 125 rb"
+        android:layout_marginTop="3dp"
+        android:text="Rp 50 rb"
         android:textColor="#0B3B5C"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textStyle="bold" />
 
     <FrameLayout
@@ -41,12 +44,27 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <TextView
+    <!-- Footer: Centang Hijau + "Rp 4,4 jt cair" -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="✓ Rp 4,1 jt cair"
-        android:textColor="#1B7A46"
-        android:textSize="11sp"
-        android:textStyle="bold" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:src="@drawable/ic_widget_check_small"
+            android:contentDescription="Checkmark" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="Rp 4,4 jt cair"
+            android:textColor="#1B7A46"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
 </LinearLayout>
