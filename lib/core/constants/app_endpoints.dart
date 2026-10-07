@@ -4,6 +4,8 @@ class AppEndpoints {
   static const String logout = '/auth/logout';
   static const String me = '/auth/me';
   static const String refresh = '/auth/refresh';
+  static const String verifyPin = '/auth/verify-pin';
+  static const String setPin = '/auth/set-pin';
 
   // Developer Dashboard & Features
   static const String developerDashboard = '/developer/dashboard';

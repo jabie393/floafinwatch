@@ -176,8 +176,46 @@ class PayoutWidgetView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pending = data?.summary.pendingPayout ?? 300000;
-    final unpaidCount = data?.summary.unpaidPayoutCount ?? 1;
+    final pending = data?.summary.pendingPayout ?? 0;
+    final waitingPayoutCount = data?.summary.waitingPayoutCount ?? 0;
+    final waitingConfirmationCount = data?.summary.waitingConfirmationCount ?? 0;
+
+    // Menentukan status & teks footer sesuai Opsi A:
+    // 1. Campuran: X konfirmasi · Y antre
+    // 2. Hanya konfirmasi: X perlu konfirmasi / Perlu konfirmasi
+    // 3. Hanya antre: X menunggu transfer / Menunggu transfer
+    // 4. Rp 0: Tidak ada antrean
+    final String footerText;
+    final Color footerColor;
+    final Color iconBgColor;
+    final Color iconColor;
+    final IconData headerIcon;
+
+    if (waitingConfirmationCount > 0 && waitingPayoutCount > 0) {
+      footerText = '$waitingConfirmationCount konfirmasi · $waitingPayoutCount antre';
+      footerColor = const Color(0xFF0284C7);
+      iconBgColor = const Color(0xFFE0EDFB);
+      iconColor = const Color(0xFF0284C7);
+      headerIcon = Icons.notifications_active_rounded;
+    } else if (waitingConfirmationCount > 0) {
+      footerText = waitingConfirmationCount == 1 ? 'Perlu konfirmasi' : '$waitingConfirmationCount perlu konfirmasi';
+      footerColor = const Color(0xFF0284C7);
+      iconBgColor = const Color(0xFFE0EDFB);
+      iconColor = const Color(0xFF0284C7);
+      headerIcon = Icons.pending_actions_rounded;
+    } else if (waitingPayoutCount > 0) {
+      footerText = waitingPayoutCount == 1 ? 'Menunggu transfer' : '$waitingPayoutCount menunggu transfer';
+      footerColor = const Color(0xFF6C8494);
+      iconBgColor = const Color(0xFFFFEAD8);
+      iconColor = const Color(0xFFE2782A);
+      headerIcon = Icons.access_time_filled_rounded;
+    } else {
+      footerText = 'Tidak ada antrean';
+      footerColor = const Color(0xFF8BA2B2);
+      iconBgColor = const Color(0xFFF1F5F9);
+      iconColor = const Color(0xFF94A3B8);
+      headerIcon = Icons.check_circle_outline_rounded;
+    }
 
     return WidgetGlassCard(
       width: width,
@@ -186,21 +224,21 @@ class PayoutWidgetView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Header: Icon Clock Jam
+          // Header: Icon Dinamis
           Row(
             children: [
               Container(
                 width: 38,
                 height: 38,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFFFFEAD8),
+                  color: iconBgColor,
                 ),
                 alignment: Alignment.center,
-                child: const Icon(
-                  Icons.access_time_filled_rounded,
+                child: Icon(
+                  headerIcon,
                   size: 20,
-                  color: Color(0xFFE2782A),
+                  color: iconColor,
                 ),
               ),
             ],
@@ -237,22 +275,26 @@ class PayoutWidgetView extends StatelessWidget {
             ],
           ),
 
-          // Footer: "Perlu konfirmasi" / "Siap cair" + Chevron
+          // Footer: Status Dinamis + Chevron
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                unpaidCount > 0 ? 'Perlu konfirmasi' : 'Semua cair',
-                style: const TextStyle(
-                  color: Color(0xFF6C8494),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 11,
+              Expanded(
+                child: Text(
+                  footerText,
+                  style: TextStyle(
+                    color: footerColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
                 size: 16,
-                color: Color(0xFF6C8494),
+                color: footerColor,
               ),
             ],
           ),

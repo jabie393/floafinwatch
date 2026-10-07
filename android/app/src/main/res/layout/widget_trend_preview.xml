@@ -5,8 +5,12 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_bg"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingStart="18dp"
+    android:paddingEnd="18dp"
+    android:paddingTop="14dp"
+    android:paddingBottom="14dp">
 
+    <!-- Header: Judul, Subtitle & Badge -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -17,13 +21,14 @@
             android:layout_height="wrap_content"
             android:text="Tren pencairan"
             android:textColor="#0B3B5C"
-            android:textSize="15sp"
+            android:textSize="15.5sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/trend_title"
+            android:layout_marginTop="1dp"
             android:text="7 hari terakhir"
             android:textColor="#6C8494"
             android:textSize="11sp" />
@@ -35,8 +40,8 @@
             android:background="@drawable/badge_trend_bg"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
             android:text="+12,4%"
             android:textColor="#0C5D97"
             android:textSize="11sp"
@@ -48,39 +53,185 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <LinearLayout
+    <!-- Chart Area: Y-Axis Guideline Lines & 7 Bars (Stack / FrameLayout) -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:gravity="bottom"
-        android:orientation="horizontal">
+        android:layout_height="78dp">
 
-        <FrameLayout android:layout_width="0dp" android:layout_height="25dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
-        <FrameLayout android:layout_width="0dp" android:layout_height="35dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
-        <FrameLayout android:layout_width="0dp" android:layout_height="22dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
-        <FrameLayout android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_peak" />
-        <FrameLayout android:layout_width="0dp" android:layout_height="30dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
-        <FrameLayout android:layout_width="0dp" android:layout_height="40dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
-        <FrameLayout android:layout_width="0dp" android:layout_height="20dp" android:layout_weight="1" android:layout_margin="3dp" android:background="@drawable/pillar_light" />
-    </LinearLayout>
+        <!-- 3 Horizontal Guideline Rows with Nominal Labels -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:weightSum="2">
 
+            <!-- Level Atas (Maksimal: Rp 650 rb) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="Rp 650 rb"
+                    android:textColor="#6C8494"
+                    android:textSize="8.5sp"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="4dp"
+                    android:background="#336C8494" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- Level Tengah (Setengah: Rp 325 rb) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="48dp"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:text="Rp 325 rb"
+                android:textColor="#8BA2B2"
+                android:textSize="8sp" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="4dp"
+                    android:background="#1F6C8494" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- Level Bawah (Rp 0) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="48dp"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:text="Rp 0"
+                android:textColor="#8BA2B2"
+                android:textSize="8sp" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="4dp"
+                    android:background="#336C8494" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 7 Pilar Lengkung (Offset Kiri 52dp) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="52dp"
+            android:layout_marginBottom="4dp"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/pillar_light" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/pillar_light" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/pillar_light" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="62dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/pillar_peak" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/pillar_light" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/pillar_light" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="26dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/pillar_light" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Date Labels (Offset Kiri 52dp sejajar pilar) -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp">
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="2dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="30 SEP"
+            android:text="29 SEP"
             android:textColor="#6C8494"
-            android:textSize="9sp" />
+            android:textSize="9.5sp"
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:text="06 OKT"
+            android:text="05 OKT"
             android:textColor="#6C8494"
-            android:textSize="9sp" />
+            android:textSize="9.5sp"
+            android:textStyle="bold" />
     </RelativeLayout>
 </LinearLayout>

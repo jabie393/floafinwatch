@@ -125,4 +125,39 @@ class AuthRepository {
       await storage.clearAll();
     }
   }
+
+  Future<bool> verifyPin(String pin) async {
+    try {
+      final response = await dio.post(
+        AppEndpoints.verifyPin,
+        data: {'pin': pin},
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['success'] == true) {
+        return true;
+      }
+      return false;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 422 || e.response?.statusCode == 400) {
+        return false;
+      }
+      throw AppException.fromDioError(e);
+    }
+  }
+
+  Future<bool> setPin(String pin) async {
+    try {
+      final response = await dio.post(
+        AppEndpoints.setPin,
+        data: {
+          'pin': pin,
+          'pin_confirmation': pin,
+        },
+      );
+      final data = response.data;
+      return data is Map<String, dynamic> && data['success'] == true;
+    } on DioException catch (e) {
+      throw AppException.fromDioError(e);
+    }
+  }
 }

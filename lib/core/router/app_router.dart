@@ -1,6 +1,7 @@
 import 'package:floafinwatch/features/auth/domain/auth_state.dart';
 import 'package:floafinwatch/features/auth/presentation/auth_notifier.dart';
 import 'package:floafinwatch/features/auth/presentation/login_screen.dart';
+import 'package:floafinwatch/features/auth/presentation/pin_screen.dart';
 import 'package:floafinwatch/features/developer/dashboard/presentation/developer_dashboard_screen.dart';
 import 'package:floafinwatch/features/developer/payouts/payouts_screen.dart';
 import 'package:floafinwatch/features/developer/transactions/transactions_screen.dart';
@@ -57,6 +58,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isSplash = state.matchedLocation == '/splash';
       final isUnauthorized = state.matchedLocation == '/unauthorized';
       final isOffline = state.matchedLocation == '/offline';
+      final isPinScreen = state.matchedLocation == '/pin';
 
       // 1. Still determining initial session state
       if (authState.isInitial || (authState.isLoading && authState.user == null)) {
@@ -79,8 +81,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return isUnauthorized ? null : '/unauthorized';
       }
 
-      // 5. Authenticated developer trying to visit splash, login, unauthorized or offline
-      if (isSplash || isLoggingIn || isUnauthorized || isOffline) {
+      // 5. Authenticated developer but PIN is locked
+      if (!authState.isPinUnlocked) {
+        return isPinScreen ? null : '/pin';
+      }
+
+      // 6. Authenticated & PIN unlocked trying to visit splash, login, unauthorized, offline, or pin
+      if (isSplash || isLoggingIn || isUnauthorized || isOffline || isPinScreen) {
         final pending = ref.read(pendingRouteProvider);
         if (pending != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -101,6 +108,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/pin',
+        builder: (context, state) => const PinScreen(),
       ),
       StatefulShellRoute(
         navigatorContainerBuilder: (context, navigationShell, children) {
