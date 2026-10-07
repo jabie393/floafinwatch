@@ -75,7 +75,7 @@ class HakDevWidgetView extends StatelessWidget {
     super.key,
     this.data,
     this.width = 170,
-    this.height = 170,
+    this.height = 186,
   });
 
   @override
@@ -171,7 +171,7 @@ class PayoutWidgetView extends StatelessWidget {
     super.key,
     this.data,
     this.width = 170,
-    this.height = 170,
+    this.height = 186,
   });
 
   @override
@@ -271,15 +271,15 @@ class TrendChartWidgetView extends StatelessWidget {
   const TrendChartWidgetView({
     super.key,
     this.data,
-    this.width = 350,
-    this.height = 170,
+    this.width = 368,
+    this.height = 186,
   });
 
   @override
   Widget build(BuildContext context) {
     final values = (data != null && data!.chart.values.isNotEmpty)
         ? data!.chart.values.take(7).toList()
-        : [15.0, 30.0, 20.0, 65.0, 35.0, 45.0, 18.0];
+        : [150000.0, 300000.0, 200000.0, 650000.0, 350000.0, 450000.0, 180000.0];
 
     final labels = (data != null && data!.chart.labels.isNotEmpty)
         ? data!.chart.labels.take(7).toList()
@@ -299,7 +299,7 @@ class TrendChartWidgetView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Header: Judul + Subtitle & Badge Persentase
+          // Header: Judul + Subtitle & Badge Persentase (Kembali ke semula)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,126 +347,156 @@ class TrendChartWidgetView extends StatelessWidget {
             ],
           ),
 
-          // Chart Area: 7 Pillars with Guideline
+          // Chart Area: Nominal disamping grafik (ala Dashboard) + 7 Pilar Lengkung Asli
           SizedBox(
-            height: 70,
+            height: 78,
             child: Stack(
-              alignment: Alignment.bottomCenter,
               children: [
-                // Horizontal guideline
-                Positioned(
-                  top: 24,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    height: 1,
-                    color: const Color(0x336C8494),
-                  ),
+                // 3 Baris Garis Panduan dengan Nominal Terpasang Sejajar Presisi
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Level Atas (Maksimal)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 48,
+                          child: Text(
+                            formatWidgetRupiah(maxVal),
+                            maxLines: 1,
+                            style: const TextStyle(
+                              color: Color(0xFF6C8494),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 8.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            color: const Color(0x336C8494),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Level Tengah (Setengah)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 48,
+                          child: Text(
+                            formatWidgetRupiah(maxVal / 2),
+                            maxLines: 1,
+                            style: const TextStyle(
+                              color: Color(0xFF8BA2B2),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 8,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            color: const Color(0x1F6C8494),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Level Bawah (Rp 0 - Sejajar Presisi dengan Garis Paling Bawah)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          width: 48,
+                          child: Text(
+                            'Rp 0',
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: Color(0xFF8BA2B2),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 8,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            color: const Color(0x336C8494),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
 
-                // 7 Curved Bars
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: List.generate(values.length, (index) {
-                    final val = values[index];
-                    final double ratio = maxVal > 0 ? (val / maxVal).clamp(0.18, 1.0) : 0.2;
-                    final isPeak = index == maxIndex && maxVal > 0;
+                // 7 Pilar Lengkung (Bentuk & Gradient Asli Tetap Seperti Semula)
+                Padding(
+                  padding: const EdgeInsets.only(left: 52, bottom: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: List.generate(values.length, (index) {
+                      final val = values[index];
+                      final double ratio = maxVal > 0 ? (val / maxVal).clamp(0.18, 1.0) : 0.2;
+                      final isPeak = index == maxIndex && maxVal > 0;
 
-                    return Container(
-                      width: 26,
-                      height: (58 * ratio).clamp(16.0, 62.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(13),
-                        gradient: isPeak
-                            ? const LinearGradient(
-                                colors: [Color(0xFF75AEE0), Color(0xFF4385BE)],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              )
-                            : const LinearGradient(
-                                colors: [Color(0xFFD2E6F5), Color(0xFFB5D7EF)],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ),
-                      ),
-                    );
-                  }),
+                      return Container(
+                        width: 24,
+                        height: (62 * ratio).clamp(18.0, 66.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: isPeak
+                              ? const LinearGradient(
+                                  colors: [Color(0xFF75AEE0), Color(0xFF4385BE)],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                )
+                              : const LinearGradient(
+                                  colors: [Color(0xFFD2E6F5), Color(0xFFB5D7EF)],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                        ),
+                      );
+                    }),
+                  ),
                 ),
               ],
             ),
           ),
 
-          // Date Labels
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                firstLabel,
-                style: const TextStyle(
-                  color: Color(0xFF6C8494),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 9.5,
-                  letterSpacing: 0.3,
-                ),
-              ),
-              Text(
-                lastLabel,
-                style: const TextStyle(
-                  color: Color(0xFF6C8494),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 9.5,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 4. Master Overview Widget (All-in-one 4x3 / 4x4)
-class MasterOverviewWidgetView extends StatelessWidget {
-  final DeveloperDashboardData? data;
-
-  const MasterOverviewWidgetView({super.key, this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 350,
-      height: 350,
-      child: Column(
-        children: [
-          Expanded(
+          // Date Labels (Kembali ke semula dengan padding offset Y-Axis)
+          Padding(
+            padding: const EdgeInsets.only(left: 52),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: HakDevWidgetView(
-                    data: data,
-                    width: null,
-                    height: null,
+                Text(
+                  firstLabel,
+                  style: const TextStyle(
+                    color: Color(0xFF6C8494),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 9.5,
+                    letterSpacing: 0.3,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: PayoutWidgetView(
-                    data: data,
-                    width: null,
-                    height: null,
+                Text(
+                  lastLabel,
+                  style: const TextStyle(
+                    color: Color(0xFF6C8494),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 9.5,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: TrendChartWidgetView(
-              data: data,
-              width: double.infinity,
-              height: null,
             ),
           ),
         ],

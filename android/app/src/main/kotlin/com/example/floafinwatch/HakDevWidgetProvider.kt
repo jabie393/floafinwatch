@@ -29,7 +29,8 @@ class HakDevWidgetProvider : HomeWidgetProvider() {
 
             val pendingIntent = HomeWidgetLaunchIntent.getActivity(
                 context,
-                MainActivity::class.java
+                MainActivity::class.java,
+                android.net.Uri.parse("floafinwatch://dashboard")
             )
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
             appWidgetManager.updateAppWidget(widgetId, views)

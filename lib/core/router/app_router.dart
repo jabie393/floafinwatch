@@ -13,9 +13,43 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+class PendingRouteNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void setRoute(String? route) => state = route;
+}
+
+final pendingRouteProvider =
+    NotifierProvider<PendingRouteNotifier, String?>(PendingRouteNotifier.new);
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
+    onException: (context, state, router) {
+      final uriStr = state.uri.toString();
+      final authState = ref.read(authNotifierProvider);
+      final isAuthDev =
+          authState.isAuthenticated && authState.user?.isDeveloper == true;
+
+      if (uriStr.contains('payouts')) {
+        if (isAuthDev) {
+          router.go('/dev/payouts');
+        } else {
+          ref.read(pendingRouteProvider.notifier).setRoute('/dev/payouts');
+          router.go('/splash');
+        }
+      } else if (uriStr.contains('dashboard')) {
+        if (isAuthDev) {
+          router.go('/dev/dashboard');
+        } else {
+          ref.read(pendingRouteProvider.notifier).setRoute('/dev/dashboard');
+          router.go('/splash');
+        }
+      } else {
+        router.go('/splash');
+      }
+    },
     refreshListenable: _AuthStateListenable(ref),
     redirect: (context, state) {
       final authState = ref.read(authNotifierProvider);
@@ -47,6 +81,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // 5. Authenticated developer trying to visit splash, login, unauthorized or offline
       if (isSplash || isLoggingIn || isUnauthorized || isOffline) {
+        final pending = ref.read(pendingRouteProvider);
+        if (pending != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref.read(pendingRouteProvider.notifier).setRoute(null);
+          });
+          return pending;
+        }
         return '/dev/dashboard';
       }
 

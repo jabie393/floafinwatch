@@ -29,7 +29,8 @@ class PayoutWidgetProvider : HomeWidgetProvider() {
 
             val pendingIntent = HomeWidgetLaunchIntent.getActivity(
                 context,
-                MainActivity::class.java
+                MainActivity::class.java,
+                android.net.Uri.parse("floafinwatch://payouts")
             )
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
             appWidgetManager.updateAppWidget(widgetId, views)

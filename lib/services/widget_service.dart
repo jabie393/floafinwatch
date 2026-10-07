@@ -50,7 +50,7 @@ class WidgetService {
         child: HakDevWidgetView(data: data),
       ),
       key: 'widget_hak_dev_img',
-      logicalSize: const Size(170, 170),
+      logicalSize: const Size(170, 186),
       pixelRatio: 2.5,
     );
     await HomeWidget.saveWidgetData<String>('widget_hak_dev_img', path1);
@@ -66,7 +66,7 @@ class WidgetService {
         child: PayoutWidgetView(data: data),
       ),
       key: 'widget_payout_img',
-      logicalSize: const Size(170, 170),
+      logicalSize: const Size(170, 186),
       pixelRatio: 2.5,
     );
     await HomeWidget.saveWidgetData<String>('widget_payout_img', path2);
@@ -82,29 +82,13 @@ class WidgetService {
         child: TrendChartWidgetView(data: data),
       ),
       key: 'widget_trend_img',
-      logicalSize: const Size(350, 170),
+      logicalSize: const Size(368, 186),
       pixelRatio: 2.5,
     );
     await HomeWidget.saveWidgetData<String>('widget_trend_img', path3);
     await HomeWidget.updateWidget(
       name: 'TrendChartWidgetProvider',
       androidName: 'TrendChartWidgetProvider',
-    );
-
-    // Widget 4: Master Overview (4x3 / 4x4)
-    final path4 = await HomeWidget.renderFlutterWidget(
-      Material(
-        type: MaterialType.transparency,
-        child: MasterOverviewWidgetView(data: data),
-      ),
-      key: 'widget_master_img',
-      logicalSize: const Size(350, 350),
-      pixelRatio: 2.5,
-    );
-    await HomeWidget.saveWidgetData<String>('widget_master_img', path4);
-    await HomeWidget.updateWidget(
-      name: 'MasterOverviewWidgetProvider',
-      androidName: 'MasterOverviewWidgetProvider',
     );
   }
 

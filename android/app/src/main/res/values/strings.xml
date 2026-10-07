@@ -7,6 +7,4 @@
     <string name="widget_payout_desc">Pantau status payout dan pencairan dana hak developer</string>
     <string name="widget_trend_title">Tren Pencairan (CIB)</string>
     <string name="widget_trend_desc">Grafik tren pencairan dana developer 7 hari terakhir</string>
-    <string name="widget_master_title">Ringkasan Developer (CIB)</string>
-    <string name="widget_master_desc">Ringkasan lengkap hak dev, payout, dan grafik tren dalam satu widget</string>
 </resources>
