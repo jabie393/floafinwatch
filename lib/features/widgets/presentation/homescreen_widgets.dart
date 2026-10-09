@@ -319,19 +319,44 @@ class TrendChartWidgetView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final values = (data != null && data!.chart.values.isNotEmpty)
-        ? data!.chart.values.take(7).toList()
-        : [150000.0, 300000.0, 200000.0, 650000.0, 350000.0, 450000.0, 180000.0];
+    // 1. Pastikan data grafik selalu strictly 7 hari terakhir (bukan filter 'year' / 'month')
+    final isStrict7d = data != null &&
+        data!.chart.period == '7d' &&
+        data!.chart.values.isNotEmpty &&
+        data!.chart.labels.length <= 7;
 
-    final labels = (data != null && data!.chart.labels.isNotEmpty)
-        ? data!.chart.labels.take(7).toList()
-        : ['29 Sep', '30 Sep', '01 Okt', '02 Okt', '03 Okt', '04 Okt', '05 Okt'];
+    final List<double> values;
+    final List<String> labels;
 
-    final maxVal = values.isNotEmpty ? values.reduce(math.max) : 100.0;
-    final maxIndex = values.indexOf(maxVal);
+    if (isStrict7d) {
+      values = data!.chart.values.take(7).toList();
+      labels = data!.chart.labels.take(7).toList();
+    } else {
+      // Fallback tanggal 7 hari terakhir yang selalu dinamis sampai hari ini
+      final now = DateTime.now();
+      const monthShortNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      labels = List.generate(7, (i) {
+        final d = now.subtract(Duration(days: 6 - i));
+        final dayStr = d.day.toString().padLeft(2, '0');
+        return '$dayStr ${monthShortNames[d.month - 1]}';
+      });
+
+      if (data != null && data!.chart.period == '7d' && data!.chart.values.isNotEmpty) {
+        values = data!.chart.values.take(7).toList();
+      } else {
+        values = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+      }
+    }
+
+    final effectiveValues = List<double>.generate(7, (i) => i < values.length ? values[i] : 0.0);
+    final rawMax = effectiveValues.isNotEmpty ? effectiveValues.reduce(math.max) : 0.0;
+    final hasPayout = rawMax > 0;
+    final double maxVal = hasPayout ? rawMax : 500000.0; // Skala standar 500rb jika belum ada pencairan
+    final maxIndex = hasPayout ? effectiveValues.indexOf(rawMax) : -1;
 
     final firstLabel = labels.isNotEmpty ? labels.first.toUpperCase() : '29 SEP';
     final lastLabel = labels.isNotEmpty ? labels.last.toUpperCase() : '05 OKT';
+    final badgeText = hasPayout ? '+12,4%' : '0%';
 
     return WidgetGlassCard(
       width: width,
@@ -341,7 +366,7 @@ class TrendChartWidgetView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Header: Judul + Subtitle & Badge Persentase (Kembali ke semula)
+          // Header: Judul + Subtitle & Badge Persentase
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,9 +401,9 @@ class TrendChartWidgetView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFFBDDFF5), width: 1),
                 ),
-                child: const Text(
-                  '+12,4%',
-                  style: TextStyle(
+                child: Text(
+                  badgeText,
+                  style: const TextStyle(
                     color: Color(0xFF0C5D97),
                     fontWeight: FontWeight.w700,
                     fontSize: 11,
@@ -389,7 +414,7 @@ class TrendChartWidgetView extends StatelessWidget {
             ],
           ),
 
-          // Chart Area: Nominal disamping grafik (ala Dashboard) + 7 Pilar Lengkung Asli
+          // Chart Area: Nominal disamping grafik + 7 Pilar Lengkung
           SizedBox(
             height: 78,
             child: Stack(
@@ -478,21 +503,29 @@ class TrendChartWidgetView extends StatelessWidget {
                   ],
                 ),
 
-                // 7 Pilar Lengkung (Bentuk & Gradient Asli Tetap Seperti Semula)
+                // 7 Pilar Lengkung (Jika nominal 0: resting pill halus di garis Rp 0; Jika ada: proporsional)
                 Padding(
                   padding: const EdgeInsets.only(left: 52, bottom: 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.end,
-                    children: List.generate(values.length, (index) {
-                      final val = values[index];
-                      final double ratio = maxVal > 0 ? (val / maxVal).clamp(0.18, 1.0) : 0.2;
-                      final isPeak = index == maxIndex && maxVal > 0;
+                    children: List.generate(effectiveValues.length, (index) {
+                      final val = effectiveValues[index];
+                      final isPeak = index == maxIndex && hasPayout;
 
-                      return Container(
-                        width: 24,
-                        height: (62 * ratio).clamp(18.0, 66.0),
-                        decoration: BoxDecoration(
+                      final double pHeight;
+                      final BoxDecoration pDecoration;
+
+                      if (val <= 0) {
+                        pHeight = 5.0;
+                        pDecoration = BoxDecoration(
+                          borderRadius: BorderRadius.circular(3),
+                          color: const Color(0xFFD6E4F0),
+                        );
+                      } else {
+                        final double ratio = (val / maxVal).clamp(0.2, 1.0);
+                        pHeight = (62 * ratio).clamp(16.0, 64.0);
+                        pDecoration = BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           gradient: isPeak
                               ? const LinearGradient(
@@ -505,7 +538,13 @@ class TrendChartWidgetView extends StatelessWidget {
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                 ),
-                        ),
+                        );
+                      }
+
+                      return Container(
+                        width: 24,
+                        height: pHeight,
+                        decoration: pDecoration,
                       );
                     }),
                   ),

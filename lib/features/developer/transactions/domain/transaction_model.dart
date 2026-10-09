@@ -111,27 +111,36 @@ class TransactionItem {
       if (json['items'] is List && (json['items'] as List).isNotEmpty) {
         final firstItem = (json['items'] as List).first;
         if (firstItem is Map) {
-          final itemName = firstItem['item_name']?.toString() ?? '';
-          final itemType = firstItem['item_type']?.toString() ?? '';
+          final itemName = firstItem['item_name']?.toString().trim() ?? '';
+          final itemType = firstItem['item_type']?.toString().toLowerCase().trim() ?? '';
+
+          // A. Explicit DOI Add-on check
+          if (itemType == 'doi_addon' || itemType == 'doi' || type == 'doi_addon' || type == 'doi') {
+            return 'Tambah DOI';
+          }
+
+          // B. Explicit Replace PDF check
+          if (itemType == 'replace_pdf' || itemType == 'ganti_pdf' || type == 'replace_pdf' || type == 'ganti_pdf') {
+            return 'Ganti PDF';
+          }
 
           if (itemName.isNotEmpty) {
             final lower = itemName.toLowerCase();
-            if (lower.contains('doi')) return 'Tambah DOI';
-            if (lower.contains('ganti pdf') || lower.contains('ubah pdf')) return 'Ganti PDF';
+            if (lower == 'tambah doi' || lower == 'add-on doi' || lower == 'doi addon') {
+              return 'Tambah DOI';
+            }
+            if (lower == 'ganti pdf' || lower == 'ubah pdf' || lower == 'replace pdf') {
+              return 'Ganti PDF';
+            }
             if (lower.contains('fast track')) return 'Fast Track';
             if (lower.contains('sertifikat')) return 'Sertifikat';
-            if (lower.contains('publikasi') || lower.contains('naskah')) return 'Publikasi Naskah';
+
+            // Return full item/package name (e.g. "ISSN + DOI (11-15 Author) - Triwikrama...")
             return itemName;
           }
 
           if (itemType.isNotEmpty) {
-            switch (itemType.toLowerCase()) {
-              case 'doi_addon':
-              case 'doi':
-                return 'Tambah DOI';
-              case 'replace_pdf':
-              case 'ganti_pdf':
-                return 'Ganti PDF';
+            switch (itemType) {
               case 'publication':
               case 'submission':
                 return 'Publikasi Naskah';

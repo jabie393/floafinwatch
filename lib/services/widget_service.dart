@@ -42,6 +42,8 @@ class WidgetService {
     }
   }
 
+  static FinancialChartData? _lastValid7dChart;
+
   Future<void> _renderAndPushWidgets(DeveloperDashboardData data) async {
     // Widget 1: Hak Dev (Kotak 2x2)
     final path1 = await HomeWidget.renderFlutterWidget(
@@ -76,10 +78,27 @@ class WidgetService {
     );
 
     // Widget 3: Tren Pencairan (Lebar 4x2)
+    // Pastikan widget tren selalu me-render chart 7 hari terakhir yang valid,
+    // bukan filter 'year' atau 'month' yang mungkin sedang dipilih pengguna di dalam app.
+    if (data.chart.period == '7d' && data.chart.values.isNotEmpty) {
+      _lastValid7dChart = data.chart;
+    }
+
+    final chartForTrend = (data.chart.period == '7d' && data.chart.values.isNotEmpty)
+        ? data.chart
+        : (_lastValid7dChart ?? data.chart);
+
+    final trendData = DeveloperDashboardData(
+      summary: data.summary,
+      payoutStatistics: data.payoutStatistics,
+      chart: chartForTrend,
+      lastUpdated: data.lastUpdated,
+    );
+
     final path3 = await HomeWidget.renderFlutterWidget(
       Material(
         type: MaterialType.transparency,
-        child: TrendChartWidgetView(data: data),
+        child: TrendChartWidgetView(data: trendData),
       ),
       key: 'widget_trend_img',
       logicalSize: const Size(368, 186),

@@ -159,8 +159,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               tx.serviceName.toLowerCase().contains('kolektif');
           if (!isBulk) return false;
         } else if (_selectedType == 'doi_addon') {
-          final isDoi = tx.type.toLowerCase().contains('doi') ||
-              tx.serviceName.toLowerCase().contains('doi');
+          final isDoi = tx.type == 'doi_addon' ||
+              tx.type == 'doi' ||
+              tx.serviceName.toLowerCase() == 'tambah doi' ||
+              tx.serviceName.toLowerCase() == 'add-on doi';
           if (!isDoi) return false;
         } else if (_selectedType == 'ganti_pdf' || _selectedType == 'replace_pdf') {
           final isGantiPdf = tx.type.toLowerCase().contains('pdf') ||
