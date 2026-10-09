@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "920451048166",
+    "project_number": "YOUR_PROJECT_NUMBER",
     "project_id": "floafinwatch",
     "storage_bucket": "floafinwatch.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:920451048166:android:081a9f6c05e8d71a11d127",
+        "mobilesdk_app_id": "YOUR_MOBILE_SDK_APP_ID",
         "android_client_info": {
           "package_name": "com.example.floafinwatch"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBMSBq5BzLGB9e55g7oR21UGMrqbiI5NT8"
+          "current_key": "YOUR_FIREBASE_API_KEY"
         }
       ],
       "services": {
