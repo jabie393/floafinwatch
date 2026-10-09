@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/config/app_config.dart';
 import '../core/network/dio_client.dart';
 import '../core/storage/secure_storage_service.dart';
 import '../features/developer/dashboard/domain/dashboard_model.dart';
@@ -21,29 +22,96 @@ final fcmServiceProvider = Provider<FcmService>((ref) {
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
+    WidgetsFlutterBinding.ensureInitialized();
     await Firebase.initializeApp();
     final data = message.data;
 
-    // Jika pesan membawa payload untuk update homescreen widget secara realtime
-    if (data.containsKey('action') && data['action'] == 'sync_widgets' ||
-        data.containsKey('summary')) {
-      final storage = SecureStorageService();
-      final widgetService = WidgetService(storage: storage);
+    debugPrint('[FCM Background] Received data message: $data');
 
-      if (data.containsKey('payload')) {
+    final storage = SecureStorageService();
+    final widgetService = WidgetService(storage: storage);
+
+    DeveloperDashboardData? dashboardData;
+
+    // 1. Coba parse dari payload langsung jika disertakan oleh server
+    if (data.containsKey('payload') && data['payload'].toString().isNotEmpty) {
+      try {
         final payloadMap = json.decode(data['payload'] as String) as Map<String, dynamic>;
-        final dashboardData = DeveloperDashboardData.fromJson(payloadMap);
-        await widgetService.updateWidgetSnapshot(dashboardData);
-      } else {
-        // Fallback: update dengan snapshot yang ada
-        final cached = await widgetService.getLastWidgetSnapshot();
-        if (cached != null) {
-          debugPrint('[FCM Background] Widget snapshot synchronized');
-        }
+        dashboardData = DeveloperDashboardData.fromJson(payloadMap);
+        debugPrint('[FCM Background] Parsed direct payload successfully');
+      } catch (e) {
+        debugPrint('[FCM Background] Error parsing direct payload: $e');
       }
     }
-  } catch (e) {
-    debugPrint('[FCM Background] Error in background handler: $e');
+
+    // 2. Jika tidak ada payload lengkap, fetch data dashboard terbaru via API dengan saved token
+    if (dashboardData == null) {
+      try {
+        final token = await storage.getToken();
+        if (token != null && token.isNotEmpty) {
+          final dio = Dio(BaseOptions(
+            baseUrl: AppConfig.baseUrl,
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Accept': 'application/json',
+            },
+            connectTimeout: const Duration(seconds: 12),
+            receiveTimeout: const Duration(seconds: 12),
+          ));
+
+          final response = await dio.get('/developer/dashboard');
+          if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+            final resMap = response.data as Map<String, dynamic>;
+            final mapData = resMap['data'] ?? resMap;
+            if (mapData is Map<String, dynamic>) {
+              dashboardData = DeveloperDashboardData.fromJson(mapData);
+              debugPrint('[FCM Background] Fetched fresh dashboard data from API');
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('[FCM Background] Error fetching fresh dashboard from API: $e');
+      }
+    }
+
+    // 3. Update ketiga homescreen widget dengan data terbaru
+    if (dashboardData != null) {
+      await widgetService.updateWidgetSnapshot(dashboardData);
+      debugPrint('[FCM Background] Berhasil memperbarui ketiga widget homescreen secara realtime!');
+    } else {
+      await widgetService.reRenderWidgets();
+    }
+
+    // 4. Tampilkan banner notifikasi lokal
+    final title = data['title'] ?? message.notification?.title;
+    final body = data['body'] ?? message.notification?.body;
+    if (title != null && title.toString().isNotEmpty) {
+      final localNotifications = FlutterLocalNotificationsPlugin();
+      const androidInit = AndroidInitializationSettings('@drawable/ic_notification');
+      await localNotifications.initialize(
+        settings: const InitializationSettings(android: androidInit),
+      );
+      await localNotifications.show(
+        id: message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        title: title.toString(),
+        body: body?.toString() ?? '',
+        notificationDetails: const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'floafinwatch_channel',
+            'Notifikasi Payout & Transaksi F Loafinwatch',
+            channelDescription: 'Saluran notifikasi untuk update payout dan transaksi developer realtime',
+            importance: Importance.max,
+            priority: Priority.high,
+            icon: '@drawable/ic_notification',
+            largeIcon: DrawableResourceAndroidBitmap('@mipmap/floafinwatch'),
+            color: Color(0xFF0284C7),
+          ),
+        ),
+        payload: json.encode(data),
+      );
+    }
+  } catch (e, stack) {
+    debugPrint('[FCM Background] Error in background handler: $e\n$stack');
   }
 }
 
@@ -118,15 +186,25 @@ class FcmService {
 
     // 4. Foreground Message Handler (Saat aplikasi sedang dibuka)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      debugPrint('[FCM Foreground] Pesan diterima: ${message.notification?.title}');
+      debugPrint('[FCM Foreground] Pesan diterima: ${message.data}');
 
       // Jika ada instruksi update widget
       if (message.data['action'] == 'sync_widgets' || message.data.containsKey('payload')) {
         try {
-          if (message.data.containsKey('payload')) {
+          if (message.data.containsKey('payload') && message.data['payload'].toString().isNotEmpty) {
             final payloadMap = json.decode(message.data['payload'] as String) as Map<String, dynamic>;
             final dashboardData = DeveloperDashboardData.fromJson(payloadMap);
             await widgetService.updateWidgetSnapshot(dashboardData);
+          } else {
+            final response = await dio.get('/developer/dashboard');
+            if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
+              final resMap = response.data as Map<String, dynamic>;
+              final mapData = resMap['data'] ?? resMap;
+              if (mapData is Map<String, dynamic>) {
+                final dashboardData = DeveloperDashboardData.fromJson(mapData);
+                await widgetService.updateWidgetSnapshot(dashboardData);
+              }
+            }
           }
         } catch (e) {
           debugPrint('[FCM Foreground] Error updating widget: $e');
@@ -134,22 +212,23 @@ class FcmService {
       }
 
       // Tampilkan banner notifikasi lokal
-      final notification = message.notification;
-      if (notification != null) {
+      final title = message.notification?.title ?? message.data['title'];
+      final body = message.notification?.body ?? message.data['body'];
+      if (title != null && title.toString().isNotEmpty) {
         _localNotifications.show(
-          id: notification.hashCode,
-          title: notification.title,
-          body: notification.body,
-          notificationDetails: NotificationDetails(
+          id: message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          title: title.toString(),
+          body: body?.toString() ?? '',
+          notificationDetails: const NotificationDetails(
             android: AndroidNotificationDetails(
-              _channel.id,
-              _channel.name,
-              channelDescription: _channel.description,
+              'floafinwatch_channel',
+              'Notifikasi Payout & Transaksi F Loafinwatch',
+              channelDescription: 'Saluran notifikasi untuk update payout dan transaksi developer realtime',
               importance: Importance.max,
               priority: Priority.high,
               icon: '@drawable/ic_notification',
-              largeIcon: const DrawableResourceAndroidBitmap('@mipmap/floafinwatch'),
-              color: const Color(0xFF0284C7),
+              largeIcon: DrawableResourceAndroidBitmap('@mipmap/floafinwatch'),
+              color: Color(0xFF0284C7),
             ),
           ),
           payload: json.encode(message.data),

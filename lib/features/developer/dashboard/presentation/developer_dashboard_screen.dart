@@ -14,15 +14,41 @@ import 'package:floafinwatch/features/developer/payouts/domain/payout_model.dart
 import 'package:floafinwatch/features/developer/payouts/payouts_screen.dart';
 import 'package:floafinwatch/features/developer/transactions/domain/transaction_model.dart';
 import 'package:floafinwatch/features/developer/transactions/transactions_screen.dart';
+import 'package:floafinwatch/features/widgets/presentation/autostart_guide_modal.dart';
+import 'package:floafinwatch/services/app_settings_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class DeveloperDashboardScreen extends ConsumerWidget {
+class DeveloperDashboardScreen extends ConsumerStatefulWidget {
   const DeveloperDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DeveloperDashboardScreen> createState() => _DeveloperDashboardScreenState();
+}
+
+class _DeveloperDashboardScreenState extends ConsumerState<DeveloperDashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkAutostartGuide());
+  }
+
+  Future<void> _checkAutostartGuide() async {
+    try {
+      final isAllGranted = await AppSettingsService.isAllPermissionsGranted();
+      if (!isAllGranted && mounted) {
+        // Beri jeda 800ms agar transisi awal dashboard selesai secara halus
+        await Future.delayed(const Duration(milliseconds: 800));
+        if (mounted) {
+          AutostartGuideModal.show(context);
+        }
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final dashboardAsync = ref.watch(dashboardNotifierProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;

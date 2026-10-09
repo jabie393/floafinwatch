@@ -66,15 +66,19 @@ class WidgetService {
 
   /// Memeriksa apakah widget harus di-render dalam Dark Mode
   Future<bool> resolveIsDark() async {
-    final widgetTheme = await storage.getWidgetThemeMode();
-    if (widgetTheme == 'dark') return true;
-    if (widgetTheme == 'light') return false;
+    try {
+      final widgetTheme = await storage.getWidgetThemeMode();
+      if (widgetTheme == 'dark') return true;
+      if (widgetTheme == 'light') return false;
 
-    final appTheme = await storage.getThemeMode();
-    if (appTheme == 'dark') return true;
-    if (appTheme == 'light') return false;
+      final appTheme = await storage.getThemeMode();
+      if (appTheme == 'dark') return true;
+      if (appTheme == 'light') return false;
 
-    return ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark;
+      return ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark;
+    } catch (_) {
+      return true;
+    }
   }
 
   /// Re-render widget secara instan (misal saat berganti tema gelap/terang)

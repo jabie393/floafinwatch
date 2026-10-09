@@ -5,7 +5,9 @@ import 'package:floafinwatch/core/widgets/app_avatar.dart';
 import 'package:floafinwatch/core/widgets/liquid_glass.dart';
 import 'package:floafinwatch/features/auth/presentation/auth_notifier.dart';
 import 'package:floafinwatch/features/developer/dashboard/presentation/dashboard_notifier.dart';
+import 'package:floafinwatch/features/widgets/presentation/autostart_guide_modal.dart';
 import 'package:floafinwatch/features/widgets/presentation/homescreen_widgets.dart';
+import 'package:floafinwatch/services/app_settings_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,7 +25,9 @@ class ProfileScreen extends ConsumerWidget {
     final userName = user?.name ?? 'Developer';
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: isDark
+          ? AppColors.backgroundDark
+          : AppColors.backgroundLight,
       body: AmbientLiquidBackdrop(
         child: SafeArea(
           child: ListView(
@@ -42,7 +46,9 @@ class ProfileScreen extends ConsumerWidget {
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.4,
-                            color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                            color: isDark
+                                ? AppColors.textPrimaryDark
+                                : AppColors.textPrimaryLight,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -50,7 +56,9 @@ class ProfileScreen extends ConsumerWidget {
                           'Kelola preferensi tema dan akun developer',
                           style: TextStyle(
                             fontSize: 12,
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
                           ),
                         ),
                       ],
@@ -84,7 +92,9 @@ class ProfileScreen extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                              color: isDark
+                                  ? AppColors.textPrimaryDark
+                                  : AppColors.textPrimaryLight,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -94,19 +104,30 @@ class ProfileScreen extends ConsumerWidget {
                             user?.email ?? 'email@domain.com',
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? AppColors.textMutedDark : AppColors.textSecondaryLight,
+                              color: isDark
+                                  ? AppColors.textMutedDark
+                                  : AppColors.textSecondaryLight,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 3.5,
+                            ),
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF2563EB).withValues(alpha: 0.16) : AppColors.primaryLight,
+                              color: isDark
+                                  ? const Color(0xFF2563EB)
+                                        .withValues(alpha: 0.16)
+                                  : AppColors.primaryLight,
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: isDark ? const Color(0xFF3B82F6).withValues(alpha: 0.35) : AppColors.borderLight,
+                                color: isDark
+                                    ? const Color(0xFF3B82F6)
+                                          .withValues(alpha: 0.35)
+                                    : AppColors.borderLight,
                                 width: 0.85,
                               ),
                             ),
@@ -116,7 +137,9 @@ class ProfileScreen extends ConsumerWidget {
                                 Icon(
                                   Icons.shield_rounded,
                                   size: 12,
-                                  color: isDark ? const Color(0xFF60A5FA) : AppColors.primary,
+                                  color: isDark
+                                      ? const Color(0xFF60A5FA)
+                                      : AppColors.primary,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -124,7 +147,9 @@ class ProfileScreen extends ConsumerWidget {
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
-                                    color: isDark ? const Color(0xFF60A5FA) : AppColors.primary,
+                                    color: isDark
+                                        ? const Color(0xFF60A5FA)
+                                        : AppColors.primary,
                                   ),
                                 ),
                               ],
@@ -144,7 +169,9 @@ class ProfileScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
                 ),
               ),
               const SizedBox(height: 4),
@@ -152,7 +179,9 @@ class ProfileScreen extends ConsumerWidget {
                 'Sesuaikan mode warna dengan preferensi Anda',
                 style: TextStyle(
                   fontSize: 11,
-                  color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                  color: isDark
+                      ? AppColors.textMutedDark
+                      : AppColors.textMutedLight,
                 ),
               ),
               const SizedBox(height: 10),
@@ -166,22 +195,28 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     _ThemeOptionTile(
                       title: 'Otomatis (Ikuti Sistem)',
-                      subtitle: 'Menyesuaikan otomatis dengan pengaturan perangkat',
+                      subtitle:
+                          'Menyesuaikan otomatis dengan pengaturan perangkat',
                       icon: Icons.brightness_auto_rounded,
                       isSelected: themeMode == ThemeMode.system,
                       onTap: () {
-                        ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.system);
+                        ref
+                            .read(themeModeProvider.notifier)
+                            .setThemeMode(ThemeMode.system);
                       },
                       isDark: isDark,
                     ),
                     const Divider(height: 1),
                     _ThemeOptionTile(
                       title: 'Mode Terang (Light Mode)',
-                      subtitle: 'Warna latar bersih dan cerah dengan kontras tinggi',
+                      subtitle:
+                          'Warna latar bersih dan cerah dengan kontras tinggi',
                       icon: Icons.light_mode_rounded,
                       isSelected: themeMode == ThemeMode.light,
                       onTap: () {
-                        ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.light);
+                        ref
+                            .read(themeModeProvider.notifier)
+                            .setThemeMode(ThemeMode.light);
                       },
                       isDark: isDark,
                     ),
@@ -192,7 +227,9 @@ class ProfileScreen extends ConsumerWidget {
                       icon: Icons.dark_mode_rounded,
                       isSelected: themeMode == ThemeMode.dark,
                       onTap: () {
-                        ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.dark);
+                        ref
+                            .read(themeModeProvider.notifier)
+                            .setThemeMode(ThemeMode.dark);
                       },
                       isDark: isDark,
                     ),
@@ -207,7 +244,9 @@ class ProfileScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
                 ),
               ),
               const SizedBox(height: 10),
@@ -220,12 +259,19 @@ class ProfileScreen extends ConsumerWidget {
                     _InfoRow(
                       label: 'Status Akun',
                       valueWidget: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2.5,
+                        ),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF10B981).withValues(alpha: 0.16) : AppColors.emeraldBg,
+                          color: isDark
+                              ? const Color(0xFF0284C7).withValues(alpha: 0.16)
+                              : const Color(0xFFE0F2FE),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                            color: isDark ? const Color(0xFF10B981).withValues(alpha: 0.35) : AppColors.emeraldBorder,
+                            color: isDark
+                                ? const Color(0xFF0284C7).withValues(alpha: 0.35)
+                                : const Color(0xFFBAE6FD),
                             width: 0.85,
                           ),
                         ),
@@ -234,7 +280,9 @@ class ProfileScreen extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: isDark ? AppColors.emeraldDarkText : AppColors.emeraldText,
+                            color: isDark
+                                ? const Color(0xFF38BDF8)
+                                : const Color(0xFF0284C7),
                           ),
                         ),
                       ),
@@ -260,16 +308,23 @@ class ProfileScreen extends ConsumerWidget {
                       isMonospace: true,
                       isStacked: true,
                       onCopy: () {
-                        Clipboard.setData(const ClipboardData(text: AppConfig.baseUrl));
+                        Clipboard.setData(
+                          const ClipboardData(text: AppConfig.baseUrl),
+                        );
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: const Text(
                               'Base API URL berhasil disalin',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             behavior: SnackBarBehavior.floating,
                             duration: const Duration(seconds: 2),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         );
                       },
@@ -285,67 +340,85 @@ class ProfileScreen extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
                 ),
               ),
               const SizedBox(height: 10),
               LiquidGlass(
                 borderRadius: 20,
                 blur: 18,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                child: InkWell(
-                  onTap: () => _showWidgetPreviewSheet(context, isDark, ref),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                child: Column(
+                  children: [
+                    InkWell(
+                      onTap: () =>
+                          _showWidgetPreviewSheet(context, isDark, ref),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(13),
+                            ),
+                            child: const Icon(
+                              Icons.widgets_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                           ),
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                        child: const Icon(
-                          Icons.widgets_rounded,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Widget F Loafinwatch',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-                              ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Widget F Loafinwatch',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark
+                                        ? AppColors.textPrimaryDark
+                                        : AppColors.textPrimaryLight,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Preview widget layar depan dengan data real',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: isDark
+                                        ? AppColors.textSecondaryDark
+                                        : AppColors.textSecondaryLight,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Preview widget layar depan dengan data real',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
+                            size: 22,
+                          ),
+                        ],
                       ),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                        size: 22,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const Divider(height: 20),
+                    _AutostartSettingsTile(isDark: isDark),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),
@@ -396,7 +469,11 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showWidgetPreviewSheet(BuildContext context, bool isDark, WidgetRef ref) {
+  void _showWidgetPreviewSheet(
+    BuildContext context,
+    bool isDark,
+    WidgetRef ref,
+  ) {
     final dashboardAsync = ref.read(dashboardNotifierProvider);
     final data = dashboardAsync.value;
 
@@ -423,7 +500,9 @@ class ProfileScreen extends ConsumerWidget {
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.3,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -432,7 +511,9 @@ class ProfileScreen extends ConsumerWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -465,6 +546,96 @@ class ProfileScreen extends ConsumerWidget {
                     width: double.infinity,
                     isDark: isDark,
                   ),
+                  const SizedBox(height: 20),
+
+                  // Banner Panduan Izin Autostart
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      AutostartGuideModal.show(context);
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [
+                                  const Color(0xFF0C4A6E)
+                                      .withValues(alpha: 0.6),
+                                  const Color(0xFF1E3A8A)
+                                      .withValues(alpha: 0.6),
+                                ]
+                              : [
+                                  const Color(0xFFE0F2FE),
+                                  const Color(0xFFDBEAFE),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF0284C7)
+                              .withValues(alpha: isDark ? 0.4 : 0.25),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0284C7)
+                                  .withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.bolt_rounded,
+                              size: 20,
+                              color: Color(0xFF0284C7),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Widget Belum Real-time Saat App Mati?',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark
+                                        ? AppColors.textPrimaryDark
+                                        : AppColors.textPrimaryLight,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Buka panduan izin Mulai Otomatis (Autostart) Android',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isDark
+                                        ? AppColors.textSecondaryDark
+                                        : AppColors.textSecondaryLight,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 14,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -474,7 +645,11 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _showLogoutConfirmation(BuildContext context, bool isDark, WidgetRef ref) {
+  void _showLogoutConfirmation(
+    BuildContext context,
+    bool isDark,
+    WidgetRef ref,
+  ) {
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
@@ -657,12 +832,18 @@ class _ThemeOptionTile extends StatelessWidget {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? (isDark ? AppColors.primary.withValues(alpha: 0.25) : AppColors.primaryLight)
-                    : (isDark ? Colors.white.withValues(alpha: 0.06) : AppColors.slateBg),
+                    ? (isDark
+                          ? AppColors.primary.withValues(alpha: 0.25)
+                          : AppColors.primaryLight)
+                    : (isDark
+                          ? Colors.white.withValues(alpha: 0.06)
+                          : AppColors.slateBg),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: isSelected
-                      ? (isDark ? AppColors.primary.withValues(alpha: 0.5) : AppColors.primaryLight)
+                      ? (isDark
+                            ? AppColors.primary.withValues(alpha: 0.5)
+                            : AppColors.primaryLight)
                       : Colors.transparent,
                 ),
               ),
@@ -671,7 +852,9 @@ class _ThemeOptionTile extends StatelessWidget {
                 size: 20,
                 color: isSelected
                     ? AppColors.primary
-                    : (isDark ? AppColors.textMutedDark : AppColors.textSecondaryLight),
+                    : (isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textSecondaryLight),
               ),
             ),
             const SizedBox(width: 14),
@@ -683,8 +866,12 @@ class _ThemeOptionTile extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -692,7 +879,9 @@ class _ThemeOptionTile extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 10,
-                      color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
                     ),
                   ),
                 ],
@@ -738,7 +927,9 @@ class _InfoRow extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
                 ),
               ),
               if (onCopy != null)
@@ -746,7 +937,10 @@ class _InfoRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   onTap: onCopy,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -793,7 +987,9 @@ class _InfoRow extends StatelessWidget {
                 fontFamily: isMonospace ? 'monospace' : null,
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.2,
-                color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
+                color: isDark
+                    ? const Color(0xFF93C5FD)
+                    : const Color(0xFF1D4ED8),
               ),
             ),
           ),
@@ -809,7 +1005,9 @@ class _InfoRow extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondaryLight,
           ),
         ),
         const SizedBox(width: 12),
@@ -825,11 +1023,171 @@ class _InfoRow extends StatelessWidget {
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 fontFamily: isMonospace ? 'monospace' : null,
-                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
               ),
             ),
           ),
       ],
+    );
+  }
+}
+
+class _AutostartSettingsTile extends StatefulWidget {
+  final bool isDark;
+  const _AutostartSettingsTile({required this.isDark});
+
+  @override
+  State<_AutostartSettingsTile> createState() => _AutostartSettingsTileState();
+}
+
+class _AutostartSettingsTileState extends State<_AutostartSettingsTile>
+    with WidgetsBindingObserver {
+  bool _isAllGranted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _check();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _check();
+    }
+  }
+
+  Future<void> _check() async {
+    final granted = await AppSettingsService.isAllPermissionsGranted();
+    if (mounted) {
+      setState(() {
+        _isAllGranted = granted;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+
+    return InkWell(
+      onTap: () async {
+        HapticFeedback.lightImpact();
+        await AutostartGuideModal.show(context);
+        _check();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0284C7), Color(0xFF2563EB)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(13),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              _isAllGranted ? Icons.verified_rounded : Icons.bolt_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Izin Latar Belakang',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 1.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _isAllGranted
+                            ? const Color(0xFF0284C7).withValues(alpha: 0.18)
+                            : Colors.orange.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: _isAllGranted
+                              ? const Color(0xFF0284C7).withValues(alpha: 0.35)
+                              : Colors.orange.withValues(alpha: 0.35),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Text(
+                        _isAllGranted ? 'AKTIF ✓' : 'PERLU DIAKTIFKAN',
+                        style: TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w800,
+                          color: _isAllGranted
+                              ? const Color(0xFF38BDF8)
+                              : Colors.orangeAccent,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _isAllGranted
+                      ? 'Semua izin latar belakang sudah aktif'
+                      : 'Ketuk untuk mengaktifkan Mulai Otomatis & Baterai',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondaryLight,
+            size: 22,
+          ),
+        ],
+      ),
     );
   }
 }
