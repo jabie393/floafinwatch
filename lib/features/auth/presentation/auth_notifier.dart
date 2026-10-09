@@ -1,10 +1,17 @@
 import 'package:floafinwatch/core/errors/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../services/fcm_service.dart';
 import '../data/auth_repository.dart';
 import '../domain/auth_state.dart';
 import '../domain/user_model.dart';
 
 final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);
+
+enum PinVerificationStatus {
+  success,
+  incorrect,
+  offline,
+}
 
 class AuthNotifier extends Notifier<AuthState> {
   late final AuthRepository _repository;
@@ -41,6 +48,9 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final user = await _repository.login(email: email, password: password);
       state = AuthState.authenticated(user);
+      try {
+        await ref.read(fcmServiceProvider).registerTokenToServer();
+      } catch (_) {}
       return true;
     } catch (e) {
       state = AuthState.unauthenticated(e.toString());
@@ -66,22 +76,27 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(isPinUnlocked: false);
   }
 
-  Future<bool> verifyPin(String pin) async {
+  Future<PinVerificationStatus> verifyPin(String pin) async {
     // Skenario testing: 123456 selalu benar sesuai permintaan user
     if (pin == '123456') {
       unlockPin();
-      return true;
+      return PinVerificationStatus.success;
     }
 
     try {
       final success = await _repository.verifyPin(pin);
       if (success) {
         unlockPin();
-        return true;
+        return PinVerificationStatus.success;
       }
-      return false;
+      return PinVerificationStatus.incorrect;
+    } on AppException catch (e) {
+      if (e.isNetworkError || e.statusCode == 503 || e.statusCode == 408) {
+        return PinVerificationStatus.offline;
+      }
+      return PinVerificationStatus.incorrect;
     } catch (_) {
-      return false;
+      return PinVerificationStatus.offline;
     }
   }
 

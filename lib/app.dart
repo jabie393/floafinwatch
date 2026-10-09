@@ -7,6 +7,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_notifier.dart';
 import 'features/auth/presentation/auth_notifier.dart';
+import 'services/fcm_service.dart';
 
 class LoafinwatchApp extends ConsumerStatefulWidget {
   const LoafinwatchApp({super.key});
@@ -23,6 +24,21 @@ class _LoafinwatchAppState extends ConsumerState<LoafinwatchApp> {
     super.initState();
     _handleInitialUri();
     _widgetSubscription = HomeWidget.widgetClicked.listen(_handleWidgetLaunch);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(fcmServiceProvider).initialize(
+        onNavigate: (route) {
+          final authState = ref.read(authNotifierProvider);
+          final isUnlocked = authState.isAuthenticated &&
+              authState.user?.isDeveloper == true &&
+              authState.isPinUnlocked;
+          if (isUnlocked) {
+            ref.read(appRouterProvider).go(route);
+          } else {
+            ref.read(pendingRouteProvider.notifier).setRoute(route);
+          }
+        },
+      );
+    });
   }
 
   @override

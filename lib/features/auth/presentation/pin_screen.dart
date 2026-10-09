@@ -7,6 +7,8 @@ import 'package:local_auth/local_auth.dart';
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/network/network_service.dart';
+import '../../shared/views/ios_offline_banner.dart';
 import 'auth_notifier.dart';
 
 class PinScreen extends ConsumerStatefulWidget {
@@ -105,9 +107,12 @@ class _PinScreenState extends ConsumerState<PinScreen>
         _canUseBiometrics = canUse;
       });
 
-      // Otomatis munculkan prompt biometric jika tersedia
+      // Otomatis munculkan prompt biometric jika tersedia dan online
       if (canUse && !_isLoading && !_isSuccess) {
-        _authenticateWithBiometrics();
+        final isOnline = ref.read(networkProvider).isOnline;
+        if (isOnline) {
+          _authenticateWithBiometrics();
+        }
       }
     } catch (_) {
       if (mounted) setState(() => _canUseBiometrics = false);
@@ -116,6 +121,26 @@ class _PinScreenState extends ConsumerState<PinScreen>
 
   Future<void> _authenticateWithBiometrics() async {
     if (_isLoading || _isSuccess || _isSetupMode || !_canUseBiometrics) return;
+
+    // 1. Cek koneksi internet terlebih dahulu. Jika offline, blokir login biometrik!
+    final isOnline = await ref.read(networkProvider.notifier).checkConnectivity(silent: true);
+    if (!isOnline) {
+      if (!mounted) return;
+      HapticFeedback.lightImpact();
+      _shakeController.forward(from: 0.0);
+      setState(() {
+        _isLoading = false;
+        _isSuccess = false;
+        _isError = false; // Bar PIN tidak merah
+        _statusMessage = 'Internet terputus';
+      });
+
+      await Future.delayed(const Duration(milliseconds: 1800));
+      if (mounted && _statusMessage == 'Internet terputus') {
+        setState(() => _statusMessage = null);
+      }
+      return;
+    }
 
     try {
       final bool authenticated = await _localAuth.authenticate(
@@ -134,6 +159,25 @@ class _PinScreenState extends ConsumerState<PinScreen>
       if (!mounted) return;
 
       if (authenticated) {
+        // 2. Cek kembali konektivitas internet setelah dialog ditutup
+        final stillOnline = await ref.read(networkProvider.notifier).checkConnectivity(silent: true);
+        if (!stillOnline) {
+          HapticFeedback.lightImpact();
+          _shakeController.forward(from: 0.0);
+          setState(() {
+            _isLoading = false;
+            _isSuccess = false;
+            _isError = false; // Bar PIN tidak merah
+            _statusMessage = 'Internet terputus';
+          });
+
+          await Future.delayed(const Duration(milliseconds: 1800));
+          if (mounted && _statusMessage == 'Internet terputus') {
+            setState(() => _statusMessage = null);
+          }
+          return;
+        }
+
         HapticFeedback.mediumImpact();
         setState(() {
           _isLoading = false;
@@ -188,13 +232,39 @@ class _PinScreenState extends ConsumerState<PinScreen>
   Future<void> _handleVerifyPin(String pin) async {
     setState(() => _isLoading = true);
 
-    final success = await ref
+    // 1. Cek koneksi internet sebelum verifikasi PIN
+    final isOnline = await ref.read(networkProvider.notifier).checkConnectivity(silent: true);
+    if (!isOnline) {
+      if (!mounted) return;
+      HapticFeedback.lightImpact();
+      _shakeController.forward(from: 0.0);
+      setState(() {
+        _isLoading = false;
+        _isSuccess = false;
+        _isError = false; // Bar PIN tidak merah saat offline
+        _statusMessage = 'Internet terputus';
+      });
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        setState(() {
+          _enteredPin.clear();
+        });
+      }
+      await Future.delayed(const Duration(milliseconds: 1400));
+      if (mounted && _statusMessage == 'Internet terputus') {
+        setState(() => _statusMessage = null);
+      }
+      return;
+    }
+
+    final status = await ref
         .read(authNotifierProvider.notifier)
         .verifyPin(pin);
 
     if (!mounted) return;
 
-    if (success) {
+    if (status == PinVerificationStatus.success) {
       HapticFeedback.mediumImpact();
       setState(() {
         _isLoading = false;
@@ -206,6 +276,26 @@ class _PinScreenState extends ConsumerState<PinScreen>
       await Future.delayed(const Duration(milliseconds: 650));
       if (!mounted) return;
       context.go('/dev/dashboard');
+    } else if (status == PinVerificationStatus.offline) {
+      HapticFeedback.lightImpact();
+      _shakeController.forward(from: 0.0);
+      setState(() {
+        _isLoading = false;
+        _isSuccess = false;
+        _isError = false; // Bar PIN tidak merah saat offline
+        _statusMessage = 'Internet terputus';
+      });
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        setState(() {
+          _enteredPin.clear();
+        });
+      }
+      await Future.delayed(const Duration(milliseconds: 1400));
+      if (mounted && _statusMessage == 'Internet terputus') {
+        setState(() => _statusMessage = null);
+      }
     } else {
       HapticFeedback.heavyImpact();
       setState(() {
@@ -292,12 +382,6 @@ class _PinScreenState extends ConsumerState<PinScreen>
       }
     });
   }
-
-  bool get _isErrorMessage =>
-      _statusMessage != null &&
-      (_statusMessage!.toLowerCase().contains('salah') ||
-          _statusMessage!.toLowerCase().contains('tidak cocok') ||
-          _statusMessage!.toLowerCase().contains('gagal'));
 
   void _showHelpModal(BuildContext context, bool isDark) {
     showModalBottomSheet(
@@ -961,13 +1045,13 @@ class _PinScreenState extends ConsumerState<PinScreen>
                                 horizontal: pillHPadding,
                                 vertical: pillVPadding,
                               ),
-                              decoration: BoxDecoration(
+                                decoration: BoxDecoration(
                                 color: Colors.white.withValues(
                                   alpha: isDark ? 0.10 : 0.60,
                                 ),
                                 borderRadius: BorderRadius.circular(30),
                                 border: Border.all(
-                                  color: _isError
+                                  color: (_isError && _enteredPin.isNotEmpty)
                                       ? const Color(0xFFEF4444)
                                             .withValues(alpha: 0.6)
                                       : _isSuccess
@@ -998,7 +1082,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
                                     height: dotSize,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: _isError
+                                      color: (_isError && _enteredPin.isNotEmpty)
                                           ? const Color(0xFFEF4444)
                                           : isFilled
                                           ? const Color(0xFF0EA5E9)
@@ -1036,9 +1120,11 @@ class _PinScreenState extends ConsumerState<PinScreen>
                               child: Row(
                                 key: ValueKey<String>(
                                   promptText +
-                                      (_isError || _isErrorMessage
+                                      (_isError
                                           ? 'err'
-                                          : 'ok'),
+                                          : (_statusMessage != null && _statusMessage!.contains('terputus')
+                                              ? 'warn'
+                                              : 'ok')),
                                 ),
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -1047,6 +1133,20 @@ class _PinScreenState extends ConsumerState<PinScreen>
                                       Icons.check_rounded,
                                       size: 16,
                                       color: Color(0xFF0284C7),
+                                    ),
+                                    const SizedBox(width: 4),
+                                  ] else if (_statusMessage != null && _statusMessage!.contains('terputus')) ...[
+                                    const Icon(
+                                      Icons.wifi_off_rounded,
+                                      size: 16,
+                                      color: Color(0xFFF59E0B),
+                                    ),
+                                    const SizedBox(width: 6),
+                                  ] else if (_isError) ...[
+                                    const Icon(
+                                      Icons.error_outline_rounded,
+                                      size: 16,
+                                      color: Color(0xFFEF4444),
                                     ),
                                     const SizedBox(width: 4),
                                   ],
@@ -1058,12 +1158,14 @@ class _PinScreenState extends ConsumerState<PinScreen>
                                         fontSize: promptSize,
                                         fontWeight:
                                             _isError ||
-                                                _isErrorMessage ||
+                                                (_statusMessage != null && _statusMessage!.contains('terputus')) ||
                                                 _isSuccess
                                             ? FontWeight.w700
                                             : FontWeight.w500,
-                                        color: (_isError || _isErrorMessage)
+                                        color: _isError
                                             ? const Color(0xFFEF4444)
+                                            : (_statusMessage != null && _statusMessage!.contains('terputus'))
+                                            ? const Color(0xFFF59E0B)
                                             : _isSuccess
                                             ? const Color(0xFF0284C7)
                                             : (isDark
@@ -1182,6 +1284,14 @@ class _PinScreenState extends ConsumerState<PinScreen>
                 );
               },
             ),
+          ),
+
+          // Floating iOS Dynamic Island Offline Warning Banner (Kapsul Notifikasi)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 6,
+            left: 0,
+            right: 0,
+            child: const IosOfflineBanner(),
           ),
         ],
       ),

@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:home_widget/home_widget.dart';
 import '../core/storage/secure_storage_service.dart';
@@ -18,6 +20,23 @@ class WidgetService {
   final SecureStorageService storage;
 
   WidgetService({required this.storage});
+
+  /// Cache decoded logo ui.Image di RAM agar render headless/background selalu instan & tidak pernah hilang
+  static ui.Image? _cachedLogoImage;
+
+  static Future<ui.Image?> getDecodedLogo() async {
+    if (_cachedLogoImage != null) return _cachedLogoImage;
+    try {
+      final byteData = await rootBundle.load('assets/images/app_logo.png');
+      final codec = await ui.instantiateImageCodec(byteData.buffer.asUint8List());
+      final frame = await codec.getNextFrame();
+      _cachedLogoImage = frame.image;
+      return _cachedLogoImage;
+    } catch (e) {
+      debugPrint('[WidgetService] Error decoding widget logo: $e');
+      return null;
+    }
+  }
 
   /// Updates widget snapshot cache & re-renders native homescreen widgets
   Future<void> updateWidgetSnapshot(DeveloperDashboardData data) async {
@@ -45,11 +64,14 @@ class WidgetService {
   static FinancialChartData? _lastValid7dChart;
 
   Future<void> _renderAndPushWidgets(DeveloperDashboardData data) async {
+    // Pastikan logo di-decode sinkron ke memory sebelum render offscreen
+    final logoImage = await getDecodedLogo();
+
     // Widget 1: Hak Dev (Kotak 2x2)
     final path1 = await HomeWidget.renderFlutterWidget(
       Material(
         type: MaterialType.transparency,
-        child: HakDevWidgetView(data: data),
+        child: HakDevWidgetView(data: data, logoImage: logoImage),
       ),
       key: 'widget_hak_dev_img',
       logicalSize: const Size(170, 186),

@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../developer/dashboard/domain/dashboard_model.dart';
 
@@ -70,12 +71,14 @@ class HakDevWidgetView extends StatelessWidget {
   final DeveloperDashboardData? data;
   final double? width;
   final double? height;
+  final ui.Image? logoImage;
 
   const HakDevWidgetView({
     super.key,
     this.data,
     this.width = 170,
     this.height = 186,
+    this.logoImage,
   });
 
   @override
@@ -90,15 +93,37 @@ class HakDevWidgetView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Header: Ikon Aplikasi Resmi F Loafinwatch (Transparent PNG - Rata Kiri Sejajar)
+          // Header: Ikon Aplikasi Resmi F Loafinwatch (Pre-decoded ui.Image atau Image.asset dengan fallback)
           Align(
             alignment: Alignment.centerLeft,
-            child: Image.asset(
-              'assets/images/app_logo.png',
-              height: 36,
-              alignment: Alignment.centerLeft,
-              fit: BoxFit.contain,
-            ),
+            child: logoImage != null
+                ? RawImage(
+                    image: logoImage,
+                    height: 36,
+                    alignment: Alignment.centerLeft,
+                    fit: BoxFit.contain,
+                  )
+                : Image.asset(
+                    'assets/images/app_logo.png',
+                    height: 36,
+                    alignment: Alignment.centerLeft,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0284C7),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_wallet_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      );
+                    },
+                  ),
           ),
 
           // Body: "HAK DEV" & Nominal Besar

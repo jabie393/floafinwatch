@@ -1,5 +1,8 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:floafinwatch/core/storage/secure_storage_service.dart';
 import 'package:floafinwatch/core/theme/theme_notifier.dart';
+import 'package:floafinwatch/services/fcm_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -8,6 +11,14 @@ import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    debugPrint('[Firebase Init Error] $e');
+  }
+
   try {
     await LiquidGlassShaders.ensureLoaded();
   } catch (_) {

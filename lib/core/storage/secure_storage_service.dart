@@ -60,6 +60,14 @@ class SecureStorageService {
     return await _storage.read(key: _keyThemeMode);
   }
 
+  Future<void> saveString(String key, String value) async {
+    await _storage.write(key: key, value: value);
+  }
+
+  Future<String?> getString(String key) async {
+    return await _storage.read(key: key);
+  }
+
   Future<void> clearAll() async {
     // Only clear authentication session data, keeping device settings like theme intact
     await deleteToken();
