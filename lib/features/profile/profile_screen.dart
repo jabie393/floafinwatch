@@ -260,26 +260,22 @@ class ProfileScreen extends ConsumerWidget {
                       label: 'Status Akun',
                       valueWidget: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2.5,
+                          horizontal: 5,
+                          vertical: 1.5,
                         ),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF0284C7).withValues(alpha: 0.16)
-                              : const Color(0xFFE0F2FE),
-                          borderRadius: BorderRadius.circular(6),
+                          color: const Color(0xFF0284C7).withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(5),
                           border: Border.all(
-                            color: isDark
-                                ? const Color(0xFF0284C7).withValues(alpha: 0.35)
-                                : const Color(0xFFBAE6FD),
-                            width: 0.85,
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                            width: 0.8,
                           ),
                         ),
                         child: Text(
-                          'Aktif',
+                          'AKTIF ✓',
                           style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w800,
                             color: isDark
                                 ? const Color(0xFF38BDF8)
                                 : const Color(0xFF0284C7),
@@ -1157,7 +1153,9 @@ class _AutostartSettingsTileState extends State<_AutostartSettingsTile>
                           fontSize: 8.5,
                           fontWeight: FontWeight.w800,
                           color: _isAllGranted
-                              ? const Color(0xFF38BDF8)
+                              ? (isDark
+                                  ? const Color(0xFF38BDF8)
+                                  : const Color(0xFF0284C7))
                               : Colors.orangeAccent,
                         ),
                       ),

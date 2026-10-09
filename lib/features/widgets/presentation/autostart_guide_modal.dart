@@ -367,7 +367,7 @@ class _AutostartGuideModalState extends State<AutostartGuideModal>
 
         // Real-time Detection Status
         _buildDetectionStatusPill(
-          statusText: 'Mendeteksi otomatis saat Anda kembali...',
+          statusText: 'Mendeteksi otomatis saat izin diberikan...',
           icon: Icons.sync_rounded,
         ),
         const SizedBox(height: 20),
