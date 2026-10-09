@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_config.dart';
 import 'network_service.dart';
+import '../../features/auth/presentation/auth_notifier.dart';
 import '../../features/developer/dashboard/presentation/dashboard_notifier.dart';
 import '../../features/developer/payouts/payouts_screen.dart';
 import '../../features/developer/transactions/transactions_screen.dart';
@@ -173,6 +174,7 @@ class ReverbService with WidgetsBindingObserver {
     );
     try {
       HapticFeedback.lightImpact();
+      _ref.read(authNotifierProvider.notifier).refreshProfile();
       _ref.read(dashboardNotifierProvider.notifier).loadData(isRefresh: true);
       _ref.read(realtimeSyncTriggerProvider.notifier).trigger();
       _ref.invalidate(transactionsProvider);

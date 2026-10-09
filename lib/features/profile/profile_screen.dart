@@ -1,6 +1,7 @@
 import 'package:floafinwatch/core/config/app_config.dart';
 import 'package:floafinwatch/core/constants/app_colors.dart';
 import 'package:floafinwatch/core/theme/theme_notifier.dart';
+import 'package:floafinwatch/core/widgets/app_avatar.dart';
 import 'package:floafinwatch/core/widgets/liquid_glass.dart';
 import 'package:floafinwatch/features/auth/presentation/auth_notifier.dart';
 import 'package:floafinwatch/features/developer/dashboard/presentation/dashboard_notifier.dart';
@@ -20,7 +21,6 @@ class ProfileScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final userName = user?.name ?? 'Developer';
-    final initials = userName.trim().split(' ').map((e) => e.isNotEmpty ? e[0].toUpperCase() : '').take(2).join();
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
@@ -67,38 +67,12 @@ class ProfileScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(18),
                 child: Row(
                   children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: isDark ? 0.35 : 0.9),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          initials.isNotEmpty ? initials : 'RD',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ),
+                    AppAvatar(
+                      imageUrl: user?.resolvedAvatarUrl,
+                      initials: user?.initials ?? 'RD',
+                      size: 56,
+                      isDark: isDark,
+                      fontSize: 20,
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -470,6 +444,7 @@ class ProfileScreen extends ConsumerWidget {
                         child: HakDevWidgetView(
                           data: data,
                           width: null,
+                          isDark: isDark,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -477,6 +452,7 @@ class ProfileScreen extends ConsumerWidget {
                         child: PayoutWidgetView(
                           data: data,
                           width: null,
+                          isDark: isDark,
                         ),
                       ),
                     ],
@@ -487,6 +463,7 @@ class ProfileScreen extends ConsumerWidget {
                   TrendChartWidgetView(
                     data: data,
                     width: double.infinity,
+                    isDark: isDark,
                   ),
                 ],
               ),

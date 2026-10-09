@@ -20,12 +20,13 @@ String formatWidgetRupiah(num? amount) {
   return 'Rp ${val.toInt()}';
 }
 
-/// Liquid Glass Container dengan efek glossy border dan soft shadow
+/// Liquid Glass Container dengan efek glossy border dan soft shadow (mendukung Dark Mode)
 class WidgetGlassCard extends StatelessWidget {
   final Widget child;
   final double? width;
   final double? height;
   final EdgeInsetsGeometry padding;
+  final bool isDark;
 
   const WidgetGlassCard({
     super.key,
@@ -33,6 +34,7 @@ class WidgetGlassCard extends StatelessWidget {
     this.width,
     this.height,
     this.padding = const EdgeInsets.all(16),
+    this.isDark = false,
   });
 
   @override
@@ -42,24 +44,16 @@ class WidgetGlassCard extends StatelessWidget {
       height: height,
       padding: padding,
       decoration: BoxDecoration(
-        color: const Color(0xE8F4F9FD),
+        color: isDark
+            ? const Color(0xF0101826) // Deep ultra-sleek translucent midnight glass
+            : const Color(0xE8F4F9FD),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: const Color(0xC0FFFFFF),
+          color: isDark
+              ? const Color(0x3838BDF8) // Electric icy glass rim highlight
+              : const Color(0xC0FFFFFF),
           width: 1.6,
         ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A0A3554),
-            blurRadius: 18,
-            offset: Offset(0, 6),
-          ),
-          BoxShadow(
-            color: Color(0x40FFFFFF),
-            blurRadius: 8,
-            offset: Offset(0, -2),
-          ),
-        ],
       ),
       child: child,
     );
@@ -72,6 +66,7 @@ class HakDevWidgetView extends StatelessWidget {
   final double? width;
   final double? height;
   final ui.Image? logoImage;
+  final bool isDark;
 
   const HakDevWidgetView({
     super.key,
@@ -79,6 +74,7 @@ class HakDevWidgetView extends StatelessWidget {
     this.width = 170,
     this.height = 186,
     this.logoImage,
+    this.isDark = false,
   });
 
   @override
@@ -89,6 +85,7 @@ class HakDevWidgetView extends StatelessWidget {
     return WidgetGlassCard(
       width: width,
       height: height,
+      isDark: isDark,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -130,10 +127,10 @@ class HakDevWidgetView extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'HAK DEV',
                 style: TextStyle(
-                  color: Color(0xFF6C8494),
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6C8494),
                   fontWeight: FontWeight.w700,
                   fontSize: 10.5,
                   letterSpacing: 0.8,
@@ -145,8 +142,8 @@ class HakDevWidgetView extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   formatWidgetRupiah(hakDev),
-                  style: const TextStyle(
-                    color: Color(0xFF0B3B5C),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0B3B5C),
                     fontWeight: FontWeight.w800,
                     fontSize: 22,
                     letterSpacing: -0.6,
@@ -160,17 +157,17 @@ class HakDevWidgetView extends StatelessWidget {
           // Footer: Centang + "Rp ... cair"
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.check_rounded,
                 size: 15,
-                color: Color(0xFF1B7A46),
+                color: isDark ? const Color(0xFF34D399) : const Color(0xFF1B7A46),
               ),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   '${formatWidgetRupiah(totalCair)} cair',
-                  style: const TextStyle(
-                    color: Color(0xFF1B7A46),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF34D399) : const Color(0xFF1B7A46),
                     fontWeight: FontWeight.w600,
                     fontSize: 11,
                   ),
@@ -191,12 +188,14 @@ class PayoutWidgetView extends StatelessWidget {
   final DeveloperDashboardData? data;
   final double? width;
   final double? height;
+  final bool isDark;
 
   const PayoutWidgetView({
     super.key,
     this.data,
     this.width = 170,
     this.height = 186,
+    this.isDark = false,
   });
 
   @override
@@ -205,11 +204,7 @@ class PayoutWidgetView extends StatelessWidget {
     final waitingPayoutCount = data?.summary.waitingPayoutCount ?? 0;
     final waitingConfirmationCount = data?.summary.waitingConfirmationCount ?? 0;
 
-    // Menentukan status & teks footer sesuai Opsi A:
-    // 1. Campuran: X konfirmasi · Y antre
-    // 2. Hanya konfirmasi: X perlu konfirmasi / Perlu konfirmasi
-    // 3. Hanya antre: X menunggu transfer / Menunggu transfer
-    // 4. Rp 0: Tidak ada antrean
+    // Menentukan status & teks footer:
     final String footerText;
     final Color footerColor;
     final Color iconBgColor;
@@ -218,33 +213,34 @@ class PayoutWidgetView extends StatelessWidget {
 
     if (waitingConfirmationCount > 0 && waitingPayoutCount > 0) {
       footerText = '$waitingConfirmationCount konfirmasi · $waitingPayoutCount antre';
-      footerColor = const Color(0xFF0284C7);
-      iconBgColor = const Color(0xFFE0EDFB);
-      iconColor = const Color(0xFF0284C7);
+      footerColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
+      iconBgColor = isDark ? const Color(0x330284C7) : const Color(0xFFE0EDFB);
+      iconColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
       headerIcon = Icons.notifications_active_rounded;
     } else if (waitingConfirmationCount > 0) {
       footerText = waitingConfirmationCount == 1 ? 'Perlu konfirmasi' : '$waitingConfirmationCount perlu konfirmasi';
-      footerColor = const Color(0xFF0284C7);
-      iconBgColor = const Color(0xFFE0EDFB);
-      iconColor = const Color(0xFF0284C7);
+      footerColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
+      iconBgColor = isDark ? const Color(0x330284C7) : const Color(0xFFE0EDFB);
+      iconColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
       headerIcon = Icons.pending_actions_rounded;
     } else if (waitingPayoutCount > 0) {
       footerText = waitingPayoutCount == 1 ? 'Menunggu transfer' : '$waitingPayoutCount menunggu transfer';
-      footerColor = const Color(0xFF6C8494);
-      iconBgColor = const Color(0xFFFFEAD8);
-      iconColor = const Color(0xFFE2782A);
+      footerColor = isDark ? const Color(0xFFFBBF24) : const Color(0xFF6C8494);
+      iconBgColor = isDark ? const Color(0x33F59E0B) : const Color(0xFFFFEAD8);
+      iconColor = isDark ? const Color(0xFFFBBF24) : const Color(0xFFE2782A);
       headerIcon = Icons.access_time_filled_rounded;
     } else {
       footerText = 'Tidak ada antrean';
-      footerColor = const Color(0xFF8BA2B2);
-      iconBgColor = const Color(0xFFF1F5F9);
-      iconColor = const Color(0xFF94A3B8);
+      footerColor = isDark ? const Color(0xFF64748B) : const Color(0xFF8BA2B2);
+      iconBgColor = isDark ? const Color(0x26334155) : const Color(0xFFF1F5F9);
+      iconColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8);
       headerIcon = Icons.check_circle_outline_rounded;
     }
 
     return WidgetGlassCard(
       width: width,
       height: height,
+      isDark: isDark,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -258,6 +254,9 @@ class PayoutWidgetView extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: iconBgColor,
+                  border: isDark
+                      ? Border.all(color: iconColor.withValues(alpha: 0.3), width: 1)
+                      : null,
                 ),
                 alignment: Alignment.center,
                 child: Icon(
@@ -273,10 +272,10 @@ class PayoutWidgetView extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'PAYOUT BERIKUTNYA',
                 style: TextStyle(
-                  color: Color(0xFF6C8494),
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6C8494),
                   fontWeight: FontWeight.w700,
                   fontSize: 10,
                   letterSpacing: 0.6,
@@ -288,8 +287,8 @@ class PayoutWidgetView extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   formatWidgetRupiah(pending),
-                  style: const TextStyle(
-                    color: Color(0xFF0B3B5C),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0B3B5C),
                     fontWeight: FontWeight.w800,
                     fontSize: 22,
                     letterSpacing: -0.6,
@@ -334,12 +333,14 @@ class TrendChartWidgetView extends StatelessWidget {
   final DeveloperDashboardData? data;
   final double? width;
   final double? height;
+  final bool isDark;
 
   const TrendChartWidgetView({
     super.key,
     this.data,
     this.width = 368,
     this.height = 186,
+    this.isDark = false,
   });
 
   @override
@@ -386,6 +387,7 @@ class TrendChartWidgetView extends StatelessWidget {
     return WidgetGlassCard(
       width: width,
       height: height,
+      isDark: isDark,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -396,23 +398,23 @@ class TrendChartWidgetView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Tren pencairan',
                     style: TextStyle(
-                      color: Color(0xFF0B3B5C),
+                      color: isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0B3B5C),
                       fontWeight: FontWeight.w800,
                       fontSize: 15.5,
                       letterSpacing: -0.3,
                     ),
                   ),
-                  SizedBox(height: 1),
+                  const SizedBox(height: 1),
                   Text(
                     '7 hari terakhir',
                     style: TextStyle(
-                      color: Color(0xFF6C8494),
+                      color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6C8494),
                       fontWeight: FontWeight.w500,
                       fontSize: 11,
                     ),
@@ -422,14 +424,17 @@ class TrendChartWidgetView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE2F0FA),
+                  color: isDark ? const Color(0x330284C7) : const Color(0xFFE2F0FA),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFBDDFF5), width: 1),
+                  border: Border.all(
+                    color: isDark ? const Color(0x5538BDF8) : const Color(0xFFBDDFF5),
+                    width: 1,
+                  ),
                 ),
                 child: Text(
                   badgeText,
-                  style: const TextStyle(
-                    color: Color(0xFF0C5D97),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF38BDF8) : const Color(0xFF0C5D97),
                     fontWeight: FontWeight.w700,
                     fontSize: 11,
                     letterSpacing: -0.2,
@@ -457,8 +462,8 @@ class TrendChartWidgetView extends StatelessWidget {
                           child: Text(
                             formatWidgetRupiah(maxVal),
                             maxLines: 1,
-                            style: const TextStyle(
-                              color: Color(0xFF6C8494),
+                            style: TextStyle(
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6C8494),
                               fontWeight: FontWeight.w600,
                               fontSize: 8.5,
                             ),
@@ -468,7 +473,7 @@ class TrendChartWidgetView extends StatelessWidget {
                         Expanded(
                           child: Container(
                             height: 1,
-                            color: const Color(0x336C8494),
+                            color: isDark ? const Color(0x2E64748B) : const Color(0x336C8494),
                           ),
                         ),
                       ],
@@ -483,8 +488,8 @@ class TrendChartWidgetView extends StatelessWidget {
                           child: Text(
                             formatWidgetRupiah(maxVal / 2),
                             maxLines: 1,
-                            style: const TextStyle(
-                              color: Color(0xFF8BA2B2),
+                            style: TextStyle(
+                              color: isDark ? const Color(0xFF64748B) : const Color(0xFF8BA2B2),
                               fontWeight: FontWeight.w500,
                               fontSize: 8,
                             ),
@@ -494,7 +499,7 @@ class TrendChartWidgetView extends StatelessWidget {
                         Expanded(
                           child: Container(
                             height: 1,
-                            color: const Color(0x1F6C8494),
+                            color: isDark ? const Color(0x1F64748B) : const Color(0x1F6C8494),
                           ),
                         ),
                       ],
@@ -504,13 +509,13 @@ class TrendChartWidgetView extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const SizedBox(
+                        SizedBox(
                           width: 48,
                           child: Text(
                             'Rp 0',
                             maxLines: 1,
                             style: TextStyle(
-                              color: Color(0xFF8BA2B2),
+                              color: isDark ? const Color(0xFF64748B) : const Color(0xFF8BA2B2),
                               fontWeight: FontWeight.w500,
                               fontSize: 8,
                             ),
@@ -520,7 +525,7 @@ class TrendChartWidgetView extends StatelessWidget {
                         Expanded(
                           child: Container(
                             height: 1,
-                            color: const Color(0x336C8494),
+                            color: isDark ? const Color(0x2E64748B) : const Color(0x336C8494),
                           ),
                         ),
                       ],
@@ -545,7 +550,7 @@ class TrendChartWidgetView extends StatelessWidget {
                         pHeight = 5.0;
                         pDecoration = BoxDecoration(
                           borderRadius: BorderRadius.circular(3),
-                          color: const Color(0xFFD6E4F0),
+                          color: isDark ? const Color(0xFF223046) : const Color(0xFFD6E4F0),
                         );
                       } else {
                         final double ratio = (val / maxVal).clamp(0.2, 1.0);
@@ -553,16 +558,29 @@ class TrendChartWidgetView extends StatelessWidget {
                         pDecoration = BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           gradient: isPeak
-                              ? const LinearGradient(
-                                  colors: [Color(0xFF75AEE0), Color(0xFF4385BE)],
+                              ? LinearGradient(
+                                  colors: isDark
+                                      ? const [Color(0xFF38BDF8), Color(0xFF0284C7)]
+                                      : const [Color(0xFF75AEE0), Color(0xFF4385BE)],
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                 )
-                              : const LinearGradient(
-                                  colors: [Color(0xFFD2E6F5), Color(0xFFB5D7EF)],
+                              : LinearGradient(
+                                  colors: isDark
+                                      ? const [Color(0x9938BDF8), Color(0x660284C7)]
+                                      : const [Color(0xFFD2E6F5), Color(0xFFB5D7EF)],
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                 ),
+                          boxShadow: (isPeak && isDark)
+                              ? const [
+                                  BoxShadow(
+                                    color: Color(0x550284C7),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
                         );
                       }
 
@@ -578,7 +596,7 @@ class TrendChartWidgetView extends StatelessWidget {
             ),
           ),
 
-          // Date Labels (Kembali ke semula dengan padding offset Y-Axis)
+          // Date Labels
           Padding(
             padding: const EdgeInsets.only(left: 52),
             child: Row(
@@ -586,8 +604,8 @@ class TrendChartWidgetView extends StatelessWidget {
               children: [
                 Text(
                   firstLabel,
-                  style: const TextStyle(
-                    color: Color(0xFF6C8494),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6C8494),
                     fontWeight: FontWeight.w600,
                     fontSize: 9.5,
                     letterSpacing: 0.3,
@@ -595,8 +613,8 @@ class TrendChartWidgetView extends StatelessWidget {
                 ),
                 Text(
                   lastLabel,
-                  style: const TextStyle(
-                    color: Color(0xFF6C8494),
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF6C8494),
                     fontWeight: FontWeight.w600,
                     fontSize: 9.5,
                     letterSpacing: 0.3,

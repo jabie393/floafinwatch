@@ -13,6 +13,7 @@ class SecureStorageService {
   static const String _keyWidgetSnapshot = 'home_widget_snapshot';
 
   static const String _keyThemeMode = 'app_theme_mode';
+  static const String _keyWidgetThemeMode = 'widget_theme_mode';
 
   SecureStorageService({FlutterSecureStorage? storage})
       : _storage = storage ??
@@ -58,6 +59,14 @@ class SecureStorageService {
 
   Future<String?> getThemeMode() async {
     return await _storage.read(key: _keyThemeMode);
+  }
+
+  Future<void> saveWidgetThemeMode(String mode) async {
+    await _storage.write(key: _keyWidgetThemeMode, value: mode);
+  }
+
+  Future<String?> getWidgetThemeMode() async {
+    return await _storage.read(key: _keyWidgetThemeMode);
   }
 
   Future<void> saveString(String key, String value) async {

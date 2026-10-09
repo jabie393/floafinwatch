@@ -68,6 +68,17 @@ class AuthNotifier extends Notifier<AuthState> {
     state = AuthState.authenticated(user, isPinUnlocked: state.isPinUnlocked);
   }
 
+  Future<void> refreshProfile() async {
+    try {
+      final user = await _repository.restoreSession();
+      if (user != null) {
+        state = AuthState.authenticated(user, isPinUnlocked: state.isPinUnlocked);
+      }
+    } catch (_) {
+      // Silently ignore network hiccups during background sync
+    }
+  }
+
   void unlockPin() {
     state = state.copyWith(isPinUnlocked: true);
   }

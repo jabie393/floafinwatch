@@ -62,8 +62,33 @@ class WidgetService {
   }
 
   static FinancialChartData? _lastValid7dChart;
+  static DeveloperDashboardData? _lastRenderedData;
+
+  /// Memeriksa apakah widget harus di-render dalam Dark Mode
+  Future<bool> resolveIsDark() async {
+    final widgetTheme = await storage.getWidgetThemeMode();
+    if (widgetTheme == 'dark') return true;
+    if (widgetTheme == 'light') return false;
+
+    final appTheme = await storage.getThemeMode();
+    if (appTheme == 'dark') return true;
+    if (appTheme == 'light') return false;
+
+    return ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark;
+  }
+
+  /// Re-render widget secara instan (misal saat berganti tema gelap/terang)
+  Future<void> reRenderWidgets([DeveloperDashboardData? fallbackData]) async {
+    final data = fallbackData ?? _lastRenderedData;
+    if (data != null) {
+      await _renderAndPushWidgets(data);
+    }
+  }
 
   Future<void> _renderAndPushWidgets(DeveloperDashboardData data) async {
+    _lastRenderedData = data;
+    final isDark = await resolveIsDark();
+
     // Pastikan logo di-decode sinkron ke memory sebelum render offscreen
     final logoImage = await getDecodedLogo();
 
@@ -71,7 +96,7 @@ class WidgetService {
     final path1 = await HomeWidget.renderFlutterWidget(
       Material(
         type: MaterialType.transparency,
-        child: HakDevWidgetView(data: data, logoImage: logoImage),
+        child: HakDevWidgetView(data: data, logoImage: logoImage, isDark: isDark),
       ),
       key: 'widget_hak_dev_img',
       logicalSize: const Size(170, 186),
@@ -87,7 +112,7 @@ class WidgetService {
     final path2 = await HomeWidget.renderFlutterWidget(
       Material(
         type: MaterialType.transparency,
-        child: PayoutWidgetView(data: data),
+        child: PayoutWidgetView(data: data, isDark: isDark),
       ),
       key: 'widget_payout_img',
       logicalSize: const Size(170, 186),
@@ -120,7 +145,7 @@ class WidgetService {
     final path3 = await HomeWidget.renderFlutterWidget(
       Material(
         type: MaterialType.transparency,
-        child: TrendChartWidgetView(data: trendData),
+        child: TrendChartWidgetView(data: trendData, isDark: isDark),
       ),
       key: 'widget_trend_img',
       logicalSize: const Size(368, 186),

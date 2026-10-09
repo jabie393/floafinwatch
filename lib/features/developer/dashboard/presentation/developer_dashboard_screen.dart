@@ -1,6 +1,7 @@
 import 'package:floafinwatch/core/constants/app_colors.dart';
 import 'package:floafinwatch/core/utils/currency_formatter.dart';
 import 'package:floafinwatch/core/utils/date_formatter.dart';
+import 'package:floafinwatch/core/widgets/app_avatar.dart';
 import 'package:floafinwatch/core/widgets/liquid_glass.dart';
 import 'package:floafinwatch/features/auth/domain/auth_state.dart';
 import 'package:floafinwatch/features/auth/presentation/auth_notifier.dart';
@@ -35,6 +36,7 @@ class DeveloperDashboardScreen extends ConsumerWidget {
           child: RefreshIndicator(
             onRefresh: () async {
               await Future.wait([
+                ref.read(authNotifierProvider.notifier).refreshProfile(),
                 ref.read(dashboardNotifierProvider.notifier).refresh(),
                 ref.refresh(transactionsProvider.future),
                 ref.refresh(payoutsProvider.future),
@@ -95,52 +97,16 @@ class DeveloperDashboardScreen extends ConsumerWidget {
   ) {
     final user = authState.user;
     final userName = user?.name ?? 'Developer';
-    final initials = userName
-        .trim()
-        .split(' ')
-        .map((e) => e.isNotEmpty ? e[0].toUpperCase() : '')
-        .take(2)
-        .join();
 
     return Row(
       children: [
-        // Avatar with initials
-        GestureDetector(
+        // Avatar with real-time photo & initials fallback
+        AppAvatar(
+          imageUrl: user?.resolvedAvatarUrl,
+          initials: user?.initials ?? 'RD',
+          size: 44,
+          isDark: isDark,
           onTap: () => context.go('/profile'),
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: isDark ? 0.35 : 0.85),
-                width: 1.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.35),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                initials.isNotEmpty ? initials : 'RD',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ),
-          ),
         ),
         const SizedBox(width: 12),
         // Greeting & Subtitle

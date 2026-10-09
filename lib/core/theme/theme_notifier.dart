@@ -1,4 +1,5 @@
 import 'package:floafinwatch/core/storage/secure_storage_service.dart';
+import 'package:floafinwatch/services/widget_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -40,6 +41,8 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
         ThemeMode.system => 'system',
       };
       await _storage.saveThemeMode(str);
+      // Re-render widget home screen secara otomatis agar tema widget sinkron
+      ref.read(widgetServiceProvider).reRenderWidgets();
     } catch (_) {
       // Gracefully ignore storage write failures
     }
