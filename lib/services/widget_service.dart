@@ -160,6 +160,12 @@ class WidgetService {
       name: 'TrendChartWidgetProvider',
       androidName: 'TrendChartWidgetProvider',
     );
+
+    // 4. Update system dynamic previews for Android 15+ launcher picker
+    try {
+      const channel = MethodChannel('com.example.floafinwatch/app_settings');
+      await channel.invokeMethod('updateWidgetPreviews');
+    } catch (_) {}
   }
 
   /// Retrieves the last recorded snapshot for offline widget rendering.

@@ -105,7 +105,44 @@ class MainActivity : FlutterFragmentActivity() {
                 "isXiaomiDevice" -> {
                     result.success(isXiaomi())
                 }
+                "updateWidgetPreviews" -> {
+                    updateAllWidgetPreviews()
+                    result.success(true)
+                }
                 else -> result.notImplemented()
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+    }
+
+    private fun updateAllWidgetPreviews() {
+        if (Build.VERSION.SDK_INT >= 35) {
+            try {
+                val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(this)
+                val prefs = getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+
+                val path1 = prefs.getString("widget_hak_dev_img", null)
+                if (path1 != null) {
+                    val bmp = android.graphics.BitmapFactory.decodeFile(path1)
+                    if (bmp != null) HakDevWidgetProvider.updateDynamicPreview(this, appWidgetManager, bmp)
+                }
+
+                val path2 = prefs.getString("widget_payout_img", null)
+                if (path2 != null) {
+                    val bmp = android.graphics.BitmapFactory.decodeFile(path2)
+                    if (bmp != null) PayoutWidgetProvider.updateDynamicPreview(this, appWidgetManager, bmp)
+                }
+
+                val path3 = prefs.getString("widget_trend_img", null)
+                if (path3 != null) {
+                    val bmp = android.graphics.BitmapFactory.decodeFile(path3)
+                    if (bmp != null) TrendChartWidgetProvider.updateDynamicPreview(this, appWidgetManager, bmp)
+                }
+            } catch (e: Throwable) {
+                android.util.Log.w("MainActivity", "Error in updateAllWidgetPreviews: ${e.message}")
             }
         }
     }
