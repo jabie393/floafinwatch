@@ -7,6 +7,7 @@ import 'package:floafinwatch/core/utils/date_formatter.dart';
 import 'package:floafinwatch/core/network/reverb_service.dart';
 import 'package:floafinwatch/core/widgets/liquid_glass.dart';
 import 'package:floafinwatch/features/developer/dashboard/data/dashboard_repository.dart';
+import 'package:floafinwatch/features/developer/dashboard/presentation/dashboard_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -1936,6 +1937,7 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
           iconColor: const Color(0xFF2563EB),
         );
         _fetchPayouts(reset: true);
+        ref.read(dashboardNotifierProvider.notifier).refresh();
       }
     } catch (e) {
       if (dialogContext != null && dialogContext!.mounted) {
@@ -1987,6 +1989,7 @@ class _PayoutsScreenState extends ConsumerState<PayoutsScreen> {
           iconColor: const Color(0xFFB91C1C),
         );
         _fetchPayouts(reset: true);
+        ref.read(dashboardNotifierProvider.notifier).refresh();
       }
     } catch (e) {
       if (dialogContext != null && dialogContext!.mounted) {

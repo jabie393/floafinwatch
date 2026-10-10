@@ -348,8 +348,7 @@ class TrendChartWidgetView extends StatelessWidget {
     // 1. Pastikan data grafik selalu strictly 7 hari terakhir (bukan filter 'year' / 'month')
     final isStrict7d = data != null &&
         data!.chart.period == '7d' &&
-        data!.chart.values.isNotEmpty &&
-        data!.chart.labels.length <= 7;
+        data!.chart.values.isNotEmpty;
 
     final List<double> values;
     final List<String> labels;
