@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -86,12 +87,24 @@ class WidgetService {
     final data = fallbackData ?? _lastRenderedData;
     if (data != null) {
       await _renderAndPushWidgets(data);
+    } else {
+      final isDark = await resolveIsDark();
+      final themeModeStr = await storage.getThemeMode() ?? 'system';
+      await HomeWidget.saveWidgetData<String>('theme_mode', themeModeStr);
+      await HomeWidget.saveWidgetData<bool>('is_dark_theme', isDark);
+      try {
+        const channel = MethodChannel('com.example.floafinwatch/app_settings');
+        await channel.invokeMethod('updateWidgetPreviews');
+      } catch (_) {}
     }
   }
 
   Future<void> _renderAndPushWidgets(DeveloperDashboardData data) async {
     _lastRenderedData = data;
     final isDark = await resolveIsDark();
+    final themeModeStr = await storage.getThemeMode() ?? 'system';
+    await HomeWidget.saveWidgetData<String>('theme_mode', themeModeStr);
+    await HomeWidget.saveWidgetData<bool>('is_dark_theme', isDark);
 
     // Pastikan logo di-decode sinkron ke memory sebelum render offscreen
     final logoImage = await getDecodedLogo();
@@ -160,6 +173,66 @@ class WidgetService {
       name: 'TrendChartWidgetProvider',
       androidName: 'TrendChartWidgetProvider',
     );
+
+    // Simpan string data realtime untuk dynamic XML preview
+    await HomeWidget.saveWidgetData<String>('hak_dev_amount_str', formatWidgetRupiah(data.summary.todayEarned));
+    await HomeWidget.saveWidgetData<String>('hak_dev_cair_str', '${formatWidgetRupiah(data.summary.totalTransferred)} cair');
+    await HomeWidget.saveWidgetData<String>('payout_amount_str', formatWidgetRupiah(data.summary.pendingPayout));
+
+    final String payoutFooterStr;
+    if (data.summary.waitingConfirmationCount > 0 && data.summary.waitingPayoutCount > 0) {
+      payoutFooterStr = '${data.summary.waitingConfirmationCount} konfirmasi · ${data.summary.waitingPayoutCount} antre';
+    } else if (data.summary.waitingConfirmationCount > 0) {
+      payoutFooterStr = data.summary.waitingConfirmationCount == 1 ? 'Perlu konfirmasi' : '${data.summary.waitingConfirmationCount} perlu konfirmasi';
+    } else if (data.summary.waitingPayoutCount > 0) {
+      payoutFooterStr = data.summary.waitingPayoutCount == 1 ? 'Menunggu transfer' : '${data.summary.waitingPayoutCount} menunggu transfer';
+    } else {
+      payoutFooterStr = 'Tidak ada antrean';
+    }
+    await HomeWidget.saveWidgetData<String>('payout_footer_str', payoutFooterStr);
+
+    String toEnglishMonth(String label) {
+      return label
+          .replaceAll('OKT', 'OCT')
+          .replaceAll('Okt', 'Oct')
+          .replaceAll('MEI', 'MAY')
+          .replaceAll('Mei', 'May')
+          .replaceAll('AGU', 'AUG')
+          .replaceAll('Agu', 'Aug')
+          .replaceAll('DES', 'DEC')
+          .replaceAll('Des', 'Dec');
+    }
+
+    final chartValues = trendData.chart.values.isNotEmpty ? trendData.chart.values.take(7).toList() : [0.0];
+    final maxVal = chartValues.isNotEmpty ? chartValues.reduce(math.max) : 0.0;
+    final hasPayout = maxVal > 0;
+    await HomeWidget.saveWidgetData<String>('trend_badge_str', hasPayout ? '+12,4%' : '0%');
+    await HomeWidget.saveWidgetData<String>('trend_max_str', formatWidgetRupiah(hasPayout ? maxVal : 500000));
+    await HomeWidget.saveWidgetData<String>('trend_mid_str', formatWidgetRupiah(hasPayout ? maxVal / 2 : 250000));
+
+    final chartValues7 = List<double>.generate(7, (i) => i < chartValues.length ? chartValues[i] : 0.0);
+    final peakIdx = hasPayout ? chartValues7.indexOf(maxVal) : -1;
+    for (int i = 0; i < 7; i++) {
+      final val = chartValues7[i];
+      final ratio = maxVal > 0 ? (val / maxVal).clamp(0.18, 1.0) : 0.2;
+      final isPeak = i == peakIdx && maxVal > 0;
+      final heightDp = (58 * ratio).clamp(16.0, 62.0);
+      await HomeWidget.saveWidgetData<double>('trend_pillar_${i + 1}_height', heightDp);
+      await HomeWidget.saveWidgetData<bool>('trend_pillar_${i + 1}_is_peak', isPeak);
+    }
+
+    if (trendData.chart.labels.isNotEmpty) {
+      await HomeWidget.saveWidgetData<String>('trend_date_start_str', toEnglishMonth(trendData.chart.labels.first.toUpperCase()));
+      await HomeWidget.saveWidgetData<String>('trend_date_end_str', toEnglishMonth(trendData.chart.labels.last.toUpperCase()));
+    } else {
+      final now = DateTime.now();
+      const monthEnglish = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      final dStart = now.subtract(const Duration(days: 6));
+      final startStr = '${dStart.day.toString().padLeft(2, '0')} ${monthEnglish[dStart.month - 1]}';
+      final endStr = '${now.day.toString().padLeft(2, '0')} ${monthEnglish[now.month - 1]}';
+      await HomeWidget.saveWidgetData<String>('trend_date_start_str', startStr);
+      await HomeWidget.saveWidgetData<String>('trend_date_end_str', endStr);
+    }
 
     // 4. Update system dynamic previews for Android 15+ launcher picker
     try {

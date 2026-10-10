@@ -15,6 +15,9 @@ class SecureStorageService {
   static const String _keyThemeMode = 'app_theme_mode';
   static const String _keyWidgetThemeMode = 'widget_theme_mode';
 
+  static const String _keyNotifTransaction = 'notif_transaction_enabled';
+  static const String _keyNotifPayout = 'notif_payout_enabled';
+
   SecureStorageService({FlutterSecureStorage? storage})
       : _storage = storage ??
             const FlutterSecureStorage(
@@ -67,6 +70,26 @@ class SecureStorageService {
 
   Future<String?> getWidgetThemeMode() async {
     return await _storage.read(key: _keyWidgetThemeMode);
+  }
+
+  Future<bool> isTransactionNotificationEnabled() async {
+    final val = await _storage.read(key: _keyNotifTransaction);
+    if (val == null) return true; // Default aktif
+    return val == 'true';
+  }
+
+  Future<void> setTransactionNotificationEnabled(bool enabled) async {
+    await _storage.write(key: _keyNotifTransaction, value: enabled ? 'true' : 'false');
+  }
+
+  Future<bool> isPayoutNotificationEnabled() async {
+    final val = await _storage.read(key: _keyNotifPayout);
+    if (val == null) return true; // Default aktif
+    return val == 'true';
+  }
+
+  Future<void> setPayoutNotificationEnabled(bool enabled) async {
+    await _storage.write(key: _keyNotifPayout, value: enabled ? 'true' : 'false');
   }
 
   Future<void> saveString(String key, String value) async {

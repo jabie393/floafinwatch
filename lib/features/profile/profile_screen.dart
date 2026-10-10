@@ -1,10 +1,12 @@
 import 'package:floafinwatch/core/config/app_config.dart';
 import 'package:floafinwatch/core/constants/app_colors.dart';
+import 'package:floafinwatch/core/storage/secure_storage_service.dart';
 import 'package:floafinwatch/core/theme/theme_notifier.dart';
 import 'package:floafinwatch/core/widgets/app_avatar.dart';
 import 'package:floafinwatch/core/widgets/liquid_glass.dart';
 import 'package:floafinwatch/features/auth/presentation/auth_notifier.dart';
 import 'package:floafinwatch/features/developer/dashboard/presentation/dashboard_notifier.dart';
+import 'package:floafinwatch/features/profile/widgets/notification_settings_modal.dart';
 import 'package:floafinwatch/features/widgets/presentation/autostart_guide_modal.dart';
 import 'package:floafinwatch/features/widgets/presentation/homescreen_widgets.dart';
 import 'package:floafinwatch/services/app_settings_service.dart';
@@ -238,9 +240,9 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
 
-              // Server & System Details Card
+              // Pengaturan Notifikasi Section (Diatas Widget Layar Utama)
               Text(
-                'Informasi Sistem',
+                'Pengaturan Notifikasi',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -249,84 +251,25 @@ class ProfileScreen extends ConsumerWidget {
                       : AppColors.textPrimaryLight,
                 ),
               ),
+              const SizedBox(height: 4),
+              Text(
+                'Atur preferensi pemberitahuan push notification aplikasi',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark
+                      ? AppColors.textMutedDark
+                      : AppColors.textMutedLight,
+                ),
+              ),
               const SizedBox(height: 10),
               LiquidGlass(
                 borderRadius: 20,
                 blur: 18,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    _InfoRow(
-                      label: 'Status Akun',
-                      valueWidget: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1.5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0284C7).withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(5),
-                          border: Border.all(
-                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
-                            width: 0.8,
-                          ),
-                        ),
-                        child: Text(
-                          'AKTIF ✓',
-                          style: TextStyle(
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.w800,
-                            color: isDark
-                                ? const Color(0xFF38BDF8)
-                                : const Color(0xFF0284C7),
-                          ),
-                        ),
-                      ),
-                      isDark: isDark,
-                    ),
-                    const Divider(height: 16),
-                    _InfoRow(
-                      label: 'Aplikasi',
-                      value: 'F Loafinwatch v1.0.0',
-                      isDark: isDark,
-                    ),
-                    const Divider(height: 16),
-                    _InfoRow(
-                      label: 'Lingkungan',
-                      value: 'CIB Production / Beta',
-                      isDark: isDark,
-                    ),
-                    const Divider(height: 18),
-                    _InfoRow(
-                      label: 'Base API URL',
-                      value: AppConfig.baseUrl,
-                      isDark: isDark,
-                      isMonospace: true,
-                      isStacked: true,
-                      onCopy: () {
-                        Clipboard.setData(
-                          const ClipboardData(text: AppConfig.baseUrl),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              'Base API URL berhasil disalin',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
                 ),
+                child: _NotificationSettingsTile(isDark: isDark),
               ),
               const SizedBox(height: 20),
 
@@ -414,6 +357,100 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const Divider(height: 20),
                     _AutostartSettingsTile(isDark: isDark),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Server & System Details Card (Informasi Sistem di paling bawah sebelum Logout)
+              Text(
+                'Informasi Sistem',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
+                ),
+              ),
+              const SizedBox(height: 10),
+              LiquidGlass(
+                borderRadius: 20,
+                blur: 18,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _InfoRow(
+                      label: 'Status Akun',
+                      valueWidget: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0284C7)
+                              .withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(
+                            color: const Color(0xFF0284C7)
+                                .withValues(alpha: 0.35),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Text(
+                          'AKTIF ✓',
+                          style: TextStyle(
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w800,
+                            color: isDark
+                                ? const Color(0xFF38BDF8)
+                                : const Color(0xFF0284C7),
+                          ),
+                        ),
+                      ),
+                      isDark: isDark,
+                    ),
+                    const Divider(height: 16),
+                    _InfoRow(
+                      label: 'Aplikasi',
+                      value: 'F Loafinwatch v1.0.0',
+                      isDark: isDark,
+                    ),
+                    const Divider(height: 16),
+                    _InfoRow(
+                      label: 'Lingkungan',
+                      value: 'CIB Production / Beta',
+                      isDark: isDark,
+                    ),
+                    const Divider(height: 18),
+                    _InfoRow(
+                      label: 'Base API URL',
+                      value: AppConfig.baseUrl,
+                      isDark: isDark,
+                      isMonospace: true,
+                      isStacked: true,
+                      onCopy: () {
+                        Clipboard.setData(
+                          const ClipboardData(text: AppConfig.baseUrl),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text(
+                              'Base API URL berhasil disalin',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -599,7 +636,7 @@ class ProfileScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Widget Belum Real-time Saat App Mati?',
+                                  'Widget Belum Real-time',
                                   style: TextStyle(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w700,
@@ -1154,8 +1191,8 @@ class _AutostartSettingsTileState extends State<_AutostartSettingsTile>
                           fontWeight: FontWeight.w800,
                           color: _isAllGranted
                               ? (isDark
-                                  ? const Color(0xFF38BDF8)
-                                  : const Color(0xFF0284C7))
+                                    ? const Color(0xFF38BDF8)
+                                    : const Color(0xFF0284C7))
                               : Colors.orangeAccent,
                         ),
                       ),
@@ -1167,6 +1204,178 @@ class _AutostartSettingsTileState extends State<_AutostartSettingsTile>
                   _isAllGranted
                       ? 'Semua izin latar belakang sudah aktif'
                       : 'Ketuk untuk mengaktifkan Mulai Otomatis & Baterai',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: isDark
+                ? AppColors.textSecondaryDark
+                : AppColors.textSecondaryLight,
+            size: 22,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationSettingsTile extends StatefulWidget {
+  final bool isDark;
+  const _NotificationSettingsTile({required this.isDark});
+
+  @override
+  State<_NotificationSettingsTile> createState() =>
+      _NotificationSettingsTileState();
+}
+
+class _NotificationSettingsTileState extends State<_NotificationSettingsTile>
+    with WidgetsBindingObserver {
+  final _storage = SecureStorageService();
+  bool _isTx = true;
+  bool _isPayout = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _check();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _check();
+    }
+  }
+
+  Future<void> _check() async {
+    final tx = await _storage.isTransactionNotificationEnabled();
+    final payout = await _storage.isPayoutNotificationEnabled();
+    if (mounted) {
+      setState(() {
+        _isTx = tx;
+        _isPayout = payout;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final int activeCount = (_isTx ? 1 : 0) + (_isPayout ? 1 : 0);
+    final String badgeText = activeCount == 2
+        ? 'SEMUA AKTIF ✓'
+        : activeCount == 1
+        ? '1 AKTIF'
+        : 'NONAKTIF';
+    final Color badgeColor = activeCount > 0
+        ? const Color(0xFF0284C7)
+        : const Color(0xFF94A3B8);
+
+    return InkWell(
+      onTap: () async {
+        HapticFeedback.lightImpact();
+        await NotificationSettingsModal.show(context);
+        _check();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0284C7), Color(0xFF2563EB)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(13),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.notifications_active_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Notifikasi Aplikasi',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 1.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: badgeColor.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(
+                          color: badgeColor.withValues(alpha: 0.35),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Text(
+                        badgeText,
+                        style: TextStyle(
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w800,
+                          color: isDark
+                              ? (activeCount > 0
+                                    ? const Color(0xFF38BDF8)
+                                    : const Color(0xFF94A3B8))
+                              : badgeColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  activeCount == 2
+                      ? 'Transaksi & payout aktif'
+                      : activeCount == 1
+                      ? (_isTx ? 'Hanya transaksi aktif' : 'Hanya payout aktif')
+                      : 'Semua notifikasi dinonaktifkan',
                   style: TextStyle(
                     fontSize: 11.5,
                     color: isDark

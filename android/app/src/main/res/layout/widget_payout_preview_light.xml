@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg_light"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Header: Circle Outline Check Icon -->
+    <FrameLayout
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:background="@drawable/ic_widget_circle_check_bg_light">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_widget_circle_check_light"
+            android:contentDescription="Icon Check" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Body: "PAYOUT BERIKUTNYA" & Nominal Besar -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PAYOUT BERIKUTNYA"
+        android:textColor="@color/widget_light_text_secondary"
+        android:textSize="10sp"
+        android:letterSpacing="0.06"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/preview_payout_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:text="Rp 0"
+        android:textColor="@color/widget_light_text_primary"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Footer: "Tidak ada antrean" + Chevron Right -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/preview_payout_footer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:text="Tidak ada antrean"
+            android:textColor="@color/widget_light_text_muted"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_widget_chevron_right_light"
+            android:contentDescription="Chevron Right" />
+    </RelativeLayout>
+
+</LinearLayout>

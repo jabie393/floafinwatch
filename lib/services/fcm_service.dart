@@ -82,10 +82,33 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       await widgetService.reRenderWidgets();
     }
 
-    // 4. Tampilkan banner notifikasi lokal
-    final title = data['title'] ?? message.notification?.title;
-    final body = data['body'] ?? message.notification?.body;
-    if (title != null && title.toString().isNotEmpty) {
+    // 4. Periksa preferensi notifikasi pengguna sebelum menampilkan banner notifikasi lokal
+    final type = data['type']?.toString().toLowerCase();
+    final titleStr = (data['title'] ?? message.notification?.title ?? '').toString();
+    final bodyStr = (data['body'] ?? message.notification?.body ?? '').toString();
+
+    final isTransaction = type == 'transaction' ||
+        data.containsKey('payment_id') ||
+        data.containsKey('order_id') ||
+        titleStr.toLowerCase().contains('transaksi');
+
+    final isPayout = type == 'payout' ||
+        data.containsKey('payout_id') ||
+        data.containsKey('payout_no') ||
+        titleStr.toLowerCase().contains('payout') ||
+        titleStr.toLowerCase().contains('antrean');
+
+    bool shouldShowBanner = true;
+    if (isTransaction) {
+      final txEnabled = await storage.isTransactionNotificationEnabled();
+      if (!txEnabled) shouldShowBanner = false;
+    }
+    if (isPayout) {
+      final payoutEnabled = await storage.isPayoutNotificationEnabled();
+      if (!payoutEnabled) shouldShowBanner = false;
+    }
+
+    if (shouldShowBanner && titleStr.isNotEmpty) {
       final localNotifications = FlutterLocalNotificationsPlugin();
       const androidInit = AndroidInitializationSettings('@drawable/ic_notification');
       await localNotifications.initialize(
@@ -93,8 +116,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       );
       await localNotifications.show(
         id: message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
-        title: title.toString(),
-        body: body?.toString() ?? '',
+        title: titleStr,
+        body: bodyStr,
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'floafinwatch_channel',
@@ -109,6 +132,8 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         ),
         payload: json.encode(data),
       );
+    } else {
+      debugPrint('[FCM Background] Banner notifikasi dilewati berdasarkan preferensi pengguna (type=$type)');
     }
   } catch (e, stack) {
     debugPrint('[FCM Background] Error in background handler: $e\n$stack');
@@ -211,14 +236,38 @@ class FcmService {
         }
       }
 
-      // Tampilkan banner notifikasi lokal
-      final title = message.notification?.title ?? message.data['title'];
-      final body = message.notification?.body ?? message.data['body'];
-      if (title != null && title.toString().isNotEmpty) {
+      // Tampilkan banner notifikasi lokal jika diizinkan preferensi pengguna
+      final data = message.data;
+      final type = data['type']?.toString().toLowerCase();
+      final titleStr = (message.notification?.title ?? data['title'] ?? '').toString();
+      final bodyStr = (message.notification?.body ?? data['body'] ?? '').toString();
+
+      final isTransaction = type == 'transaction' ||
+          data.containsKey('payment_id') ||
+          data.containsKey('order_id') ||
+          titleStr.toLowerCase().contains('transaksi');
+
+      final isPayout = type == 'payout' ||
+          data.containsKey('payout_id') ||
+          data.containsKey('payout_no') ||
+          titleStr.toLowerCase().contains('payout') ||
+          titleStr.toLowerCase().contains('antrean');
+
+      bool shouldShowBanner = true;
+      if (isTransaction) {
+        final txEnabled = await storage.isTransactionNotificationEnabled();
+        if (!txEnabled) shouldShowBanner = false;
+      }
+      if (isPayout) {
+        final payoutEnabled = await storage.isPayoutNotificationEnabled();
+        if (!payoutEnabled) shouldShowBanner = false;
+      }
+
+      if (shouldShowBanner && titleStr.isNotEmpty) {
         _localNotifications.show(
           id: message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
-          title: title.toString(),
-          body: body?.toString() ?? '',
+          title: titleStr,
+          body: bodyStr,
           notificationDetails: const NotificationDetails(
             android: AndroidNotificationDetails(
               'floafinwatch_channel',
@@ -233,6 +282,8 @@ class FcmService {
           ),
           payload: json.encode(message.data),
         );
+      } else {
+        debugPrint('[FCM Foreground] Banner notifikasi dilewati berdasarkan preferensi pengguna (type=$type)');
       }
     });
 

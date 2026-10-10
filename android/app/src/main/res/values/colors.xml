@@ -1,4 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="notification_accent">#0284C7</color>
+
+    <!-- Adaptive Preview Tokens (Default Light, overridden in values-night) -->
+    <color name="widget_preview_bg_start">#FCFEFF</color>
+    <color name="widget_preview_bg_end">#EFF5FA</color>
+    <color name="widget_preview_stroke">#FFFFFFFF</color>
+    <color name="widget_preview_text_primary">#0B3B5C</color>
+    <color name="widget_preview_text_secondary">#6C8494</color>
+    <color name="widget_preview_text_muted">#8BA2B2</color>
+    <color name="widget_preview_badge_bg">#E2F0FA</color>
+    <color name="widget_preview_badge_border">#BDDFF5</color>
+    <color name="widget_preview_badge_text">#0C5D97</color>
+    <color name="widget_preview_guideline">#336C8494</color>
+    <color name="widget_preview_guideline_mid">#1F6C8494</color>
+    <color name="widget_preview_circle_check_bg">#F1F5F9</color>
+    <color name="widget_preview_circle_check_icon">#94A3B8</color>
+    <color name="widget_preview_chevron">#8BA2B2</color>
+    <color name="widget_preview_hak_cair">#1B7A46</color>
+
+    <!-- Explicit Light Tokens -->
+    <color name="widget_light_bg_start">#FCFEFF</color>
+    <color name="widget_light_bg_end">#EFF5FA</color>
+    <color name="widget_light_stroke">#FFFFFFFF</color>
+    <color name="widget_light_text_primary">#0B3B5C</color>
+    <color name="widget_light_text_secondary">#6C8494</color>
+    <color name="widget_light_text_muted">#8BA2B2</color>
+    <color name="widget_light_badge_bg">#E2F0FA</color>
+    <color name="widget_light_badge_border">#BDDFF5</color>
+    <color name="widget_light_badge_text">#0C5D97</color>
+    <color name="widget_light_guideline">#336C8494</color>
+    <color name="widget_light_guideline_mid">#1F6C8494</color>
+    <color name="widget_light_circle_check_bg">#F1F5F9</color>
+    <color name="widget_light_circle_check_icon">#94A3B8</color>
+    <color name="widget_light_chevron">#8BA2B2</color>
+    <color name="widget_light_hak_cair">#1B7A46</color>
+
+    <!-- Explicit Dark Tokens -->
+    <color name="widget_dark_bg_start">#151F2F</color>
+    <color name="widget_dark_bg_end">#0F172A</color>
+    <color name="widget_dark_stroke">#3838BDF8</color>
+    <color name="widget_dark_text_primary">#F8FAFC</color>
+    <color name="widget_dark_text_secondary">#94A3B8</color>
+    <color name="widget_dark_text_muted">#64748B</color>
+    <color name="widget_dark_badge_bg">#330284C7</color>
+    <color name="widget_dark_badge_border">#5538BDF8</color>
+    <color name="widget_dark_badge_text">#38BDF8</color>
+    <color name="widget_dark_guideline">#2E64748B</color>
+    <color name="widget_dark_guideline_mid">#1F64748B</color>
+    <color name="widget_dark_circle_check_bg">#1E293B</color>
+    <color name="widget_dark_circle_check_icon">#94A3B8</color>
+    <color name="widget_dark_chevron">#64748B</color>
+    <color name="widget_dark_hak_cair">#34D399</color>
 </resources>

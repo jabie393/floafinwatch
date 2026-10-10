@@ -359,7 +359,7 @@ class TrendChartWidgetView extends StatelessWidget {
     } else {
       // Fallback tanggal 7 hari terakhir yang selalu dinamis sampai hari ini
       final now = DateTime.now();
-      const monthShortNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const monthShortNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       labels = List.generate(7, (i) {
         final d = now.subtract(Duration(days: 6 - i));
         final dayStr = d.day.toString().padLeft(2, '0');
@@ -379,8 +379,20 @@ class TrendChartWidgetView extends StatelessWidget {
     final double maxVal = hasPayout ? rawMax : 500000.0; // Skala standar 500rb jika belum ada pencairan
     final maxIndex = hasPayout ? effectiveValues.indexOf(rawMax) : -1;
 
-    final firstLabel = labels.isNotEmpty ? labels.first.toUpperCase() : '29 SEP';
-    final lastLabel = labels.isNotEmpty ? labels.last.toUpperCase() : '05 OKT';
+    String toEnglishMonth(String label) {
+      return label
+          .replaceAll('OKT', 'OCT')
+          .replaceAll('Okt', 'Oct')
+          .replaceAll('MEI', 'MAY')
+          .replaceAll('Mei', 'May')
+          .replaceAll('AGU', 'AUG')
+          .replaceAll('Agu', 'Aug')
+          .replaceAll('DES', 'DEC')
+          .replaceAll('Des', 'Dec');
+    }
+
+    final firstLabel = labels.isNotEmpty ? toEnglishMonth(labels.first.toUpperCase()) : '04 OCT';
+    final lastLabel = labels.isNotEmpty ? toEnglishMonth(labels.last.toUpperCase()) : '10 OCT';
     final badgeText = hasPayout ? '+12,4%' : '0%';
 
     return WidgetGlassCard(

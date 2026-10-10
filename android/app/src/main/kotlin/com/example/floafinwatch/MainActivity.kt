@@ -124,23 +124,9 @@ class MainActivity : FlutterFragmentActivity() {
                 val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(this)
                 val prefs = getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
 
-                val path1 = prefs.getString("widget_hak_dev_img", null)
-                if (path1 != null) {
-                    val bmp = android.graphics.BitmapFactory.decodeFile(path1)
-                    if (bmp != null) HakDevWidgetProvider.updateDynamicPreview(this, appWidgetManager, bmp)
-                }
-
-                val path2 = prefs.getString("widget_payout_img", null)
-                if (path2 != null) {
-                    val bmp = android.graphics.BitmapFactory.decodeFile(path2)
-                    if (bmp != null) PayoutWidgetProvider.updateDynamicPreview(this, appWidgetManager, bmp)
-                }
-
-                val path3 = prefs.getString("widget_trend_img", null)
-                if (path3 != null) {
-                    val bmp = android.graphics.BitmapFactory.decodeFile(path3)
-                    if (bmp != null) TrendChartWidgetProvider.updateDynamicPreview(this, appWidgetManager, bmp)
-                }
+                HakDevWidgetProvider.updateDynamicPreview(this, appWidgetManager, prefs)
+                PayoutWidgetProvider.updateDynamicPreview(this, appWidgetManager, prefs)
+                TrendChartWidgetProvider.updateDynamicPreview(this, appWidgetManager, prefs)
             } catch (e: Throwable) {
                 android.util.Log.w("MainActivity", "Error in updateAllWidgetPreviews: ${e.message}")
             }

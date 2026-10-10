@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
@@ -23,13 +24,23 @@ class TrendChartWidgetProvider : HomeWidgetProvider() {
         val imagePath = widgetData.getString("widget_trend_img", null)
         val bitmap = if (imagePath != null) BitmapFactory.decodeFile(imagePath) else null
 
+        val themeMode = widgetData.getString("theme_mode", "system") ?: "system"
+        val isDarkTheme = widgetData.getBoolean("is_dark_theme", false)
+        val isSystemDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+        val shouldBeDark = when (themeMode) {
+            "dark" -> true
+            "light" -> false
+            else -> isDarkTheme || isSystemDark
+        }
+        val fallbackLayout = if (shouldBeDark) R.layout.widget_trend_preview_dark else R.layout.widget_trend_preview_light
+
         appWidgetIds.forEach { widgetId ->
             val views = if (bitmap != null) {
                 RemoteViews(context.packageName, R.layout.widget_trend).apply {
                     setImageViewBitmap(R.id.widget_image, bitmap)
                 }
             } else {
-                RemoteViews(context.packageName, R.layout.widget_trend_preview)
+                RemoteViews(context.packageName, fallbackLayout)
             }
 
             val pendingIntent = HomeWidgetLaunchIntent.getActivity(
@@ -41,23 +52,63 @@ class TrendChartWidgetProvider : HomeWidgetProvider() {
             appWidgetManager.updateAppWidget(widgetId, views)
         }
 
-        if (bitmap != null) {
-            updateDynamicPreview(context, appWidgetManager, bitmap)
-        }
+        updateDynamicPreview(context, appWidgetManager, widgetData)
     }
 
     companion object {
         private var lastPreviewTime = 0L
+        private var lastPreviewHash = ""
 
-        fun updateDynamicPreview(context: Context, appWidgetManager: AppWidgetManager, bitmap: Bitmap) {
+        fun updateDynamicPreview(context: Context, appWidgetManager: AppWidgetManager, widgetData: SharedPreferences) {
+            val badge = widgetData.getString("trend_badge_str", "+12,4%") ?: "+12,4%"
+            val max = widgetData.getString("trend_max_str", "Rp 345 rb") ?: "Rp 345 rb"
+            val mid = widgetData.getString("trend_mid_str", "Rp 173 rb") ?: "Rp 173 rb"
+            val startDate = widgetData.getString("trend_date_start_str", "04 OCT") ?: "04 OCT"
+            val endDate = widgetData.getString("trend_date_end_str", "10 OCT") ?: "10 OCT"
+
+            val themeMode = widgetData.getString("theme_mode", "system") ?: "system"
+            val isDarkTheme = widgetData.getBoolean("is_dark_theme", false)
+            val isSystemDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+            val shouldBeDark = when (themeMode) {
+                "dark" -> true
+                "light" -> false
+                else -> isDarkTheme || isSystemDark
+            }
+
+            val contentHash = "$themeMode|$isDarkTheme|$isSystemDark|$shouldBeDark|$badge|$max|$mid|$startDate|$endDate"
             val now = System.currentTimeMillis()
-            if (now - lastPreviewTime < 20 * 60 * 1000L) {
+            if (contentHash == lastPreviewHash && (now - lastPreviewTime < 25 * 60 * 1000L)) {
                 return
             }
+
             if (Build.VERSION.SDK_INT >= 35) {
                 try {
-                    val previewViews = RemoteViews(context.packageName, R.layout.widget_trend).apply {
-                        setImageViewBitmap(R.id.widget_image, bitmap)
+                    val previewLayout = if (shouldBeDark) R.layout.widget_trend_preview_dark else R.layout.widget_trend_preview_light
+                    val pillarLightRes = if (shouldBeDark) R.drawable.pillar_light_dark else R.drawable.pillar_light
+                    val pillarPeakRes = if (shouldBeDark) R.drawable.pillar_peak_dark else R.drawable.pillar_peak
+
+                    val previewViews = RemoteViews(context.packageName, previewLayout).apply {
+                        setTextViewText(R.id.trend_badge, badge)
+                        setTextViewText(R.id.trend_max_label, max)
+                        setTextViewText(R.id.trend_mid_label, mid)
+                        setTextViewText(R.id.trend_date_start, startDate)
+                        setTextViewText(R.id.trend_date_end, endDate)
+
+                        val pillarIds = intArrayOf(
+                            R.id.pillar_1, R.id.pillar_2, R.id.pillar_3, R.id.pillar_4,
+                            R.id.pillar_5, R.id.pillar_6, R.id.pillar_7
+                        )
+                        for (i in 0 until 7) {
+                            val h = try {
+                                widgetData.getFloat("trend_pillar_${i + 1}_height", 0f).takeIf { it > 0 }
+                                    ?: widgetData.getString("trend_pillar_${i + 1}_height", null)?.toFloatOrNull()
+                                    ?: 28f
+                            } catch (_: Throwable) { 28f }
+                            val isPeak = widgetData.getBoolean("trend_pillar_${i + 1}_is_peak", false)
+
+                            setViewLayoutHeight(pillarIds[i], h, android.util.TypedValue.COMPLEX_UNIT_DIP)
+                            setInt(pillarIds[i], "setBackgroundResource", if (isPeak) pillarPeakRes else pillarLightRes)
+                        }
                     }
                     val method = AppWidgetManager::class.java.getMethod(
                         "setWidgetPreview",
@@ -73,8 +124,9 @@ class TrendChartWidgetProvider : HomeWidgetProvider() {
                     )
                     if (success == true) {
                         lastPreviewTime = now
+                        lastPreviewHash = contentHash
                     }
-                    Log.i("TrendChartWidget", "setWidgetPreview success: $success")
+                    Log.i("TrendChartWidget", "setWidgetPreview success: $success, hash=$contentHash, dark=$shouldBeDark")
                 } catch (e: Throwable) {
                     Log.w("TrendChartWidget", "setWidgetPreview error: ${e.message}")
                 }

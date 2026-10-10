@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg_dark"
+    android:orientation="vertical"
+    android:paddingStart="18dp"
+    android:paddingEnd="18dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="10dp">
+
+    <!-- Header: Judul, Subtitle & Badge -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/trend_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tren pencairan"
+            android:textColor="@color/widget_dark_text_primary"
+            android:textSize="15.5sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/trend_title"
+            android:layout_marginTop="1dp"
+            android:text="7 hari terakhir"
+            android:textColor="@color/widget_dark_text_secondary"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/trend_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/badge_trend_bg_dark"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:text="+12,4%"
+            android:textColor="@color/widget_dark_badge_text"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Chart Area: Y-Axis Guideline Lines & 7 Bars (Stack / FrameLayout) -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="72dp">
+
+        <!-- 3 Horizontal Guideline Rows with Nominal Labels -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:weightSum="2">
+
+            <!-- Level Atas (Maksimal: Rp 345 rb) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/trend_max_label"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="Rp 345 rb"
+                    android:textColor="@color/widget_dark_text_secondary"
+                    android:textSize="8.5sp"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@color/widget_dark_guideline" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- Level Tengah (Setengah: Rp 173 rb) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/trend_mid_label"
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="Rp 173 rb"
+                    android:textColor="@color/widget_dark_text_muted"
+                    android:textSize="8sp" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@color/widget_dark_guideline_mid" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- Level Bawah (Rp 0) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="48dp"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="Rp 0"
+                    android:textColor="@color/widget_dark_text_muted"
+                    android:textSize="8sp" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@color/widget_dark_guideline" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- 7 Pilar Ramping Proporsional (Fixed Width 22dp, spaceEvenly) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="52dp"
+            android:layout_marginBottom="4dp"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <FrameLayout
+                android:id="@+id/pillar_1"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:background="@drawable/pillar_light_dark" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <FrameLayout
+                android:id="@+id/pillar_2"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:background="@drawable/pillar_light_dark" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <FrameLayout
+                android:id="@+id/pillar_3"
+                android:layout_width="22dp"
+                android:layout_height="36dp"
+                android:background="@drawable/pillar_light_dark" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <FrameLayout
+                android:id="@+id/pillar_4"
+                android:layout_width="22dp"
+                android:layout_height="30dp"
+                android:background="@drawable/pillar_light_dark" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <FrameLayout
+                android:id="@+id/pillar_5"
+                android:layout_width="22dp"
+                android:layout_height="60dp"
+                android:background="@drawable/pillar_peak_dark" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <FrameLayout
+                android:id="@+id/pillar_6"
+                android:layout_width="22dp"
+                android:layout_height="34dp"
+                android:background="@drawable/pillar_light_dark" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <FrameLayout
+                android:id="@+id/pillar_7"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:background="@drawable/pillar_light_dark" />
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- Date Labels (Offset Kiri 52dp sejajar pilar, tanpa spacer berat berlebih) -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="5dp">
+
+        <TextView
+            android:id="@+id/trend_date_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="04 OCT"
+            android:textColor="@color/widget_dark_text_secondary"
+            android:textSize="9.5sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/trend_date_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="10 OCT"
+            android:textColor="@color/widget_dark_text_secondary"
+            android:textSize="9.5sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+</LinearLayout>
