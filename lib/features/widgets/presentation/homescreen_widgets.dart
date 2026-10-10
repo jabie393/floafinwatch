@@ -79,8 +79,8 @@ class HakDevWidgetView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hakDev = data?.summary.todayEarned ?? 4100000;
-    final totalCair = data?.summary.totalTransferred ?? 3800000;
+    final hakDev = data?.summary.todayEarned ?? 0;
+    final totalCair = data?.summary.totalTransferred ?? 0;
 
     return WidgetGlassCard(
       width: width,
@@ -376,7 +376,7 @@ class TrendChartWidgetView extends StatelessWidget {
     final effectiveValues = List<double>.generate(7, (i) => i < values.length ? values[i] : 0.0);
     final rawMax = effectiveValues.isNotEmpty ? effectiveValues.reduce(math.max) : 0.0;
     final hasPayout = rawMax > 0;
-    final double maxVal = hasPayout ? rawMax : 500000.0; // Skala standar 500rb jika belum ada pencairan
+    final double maxVal = hasPayout ? rawMax : 0.0;
     final maxIndex = hasPayout ? effectiveValues.indexOf(rawMax) : -1;
 
     String toEnglishMonth(String label) {

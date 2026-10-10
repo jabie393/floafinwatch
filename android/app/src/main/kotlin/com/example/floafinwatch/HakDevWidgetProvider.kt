@@ -25,12 +25,11 @@ class HakDevWidgetProvider : HomeWidgetProvider() {
         val bitmap = if (imagePath != null) BitmapFactory.decodeFile(imagePath) else null
 
         val themeMode = widgetData.getString("theme_mode", "system") ?: "system"
-        val isDarkTheme = widgetData.getBoolean("is_dark_theme", false)
         val isSystemDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         val shouldBeDark = when (themeMode) {
             "dark" -> true
             "light" -> false
-            else -> isDarkTheme || isSystemDark
+            else -> isSystemDark
         }
         val fallbackLayout = if (shouldBeDark) R.layout.widget_hak_dev_preview_dark else R.layout.widget_hak_dev_preview_light
 
@@ -59,28 +58,33 @@ class HakDevWidgetProvider : HomeWidgetProvider() {
         private var lastPreviewTime = 0L
         private var lastPreviewHash = ""
 
-        fun updateDynamicPreview(context: Context, appWidgetManager: AppWidgetManager, widgetData: SharedPreferences) {
-            val amount = widgetData.getString("hak_dev_amount_str", "Rp 70 rb") ?: "Rp 70 rb"
-            val cair = widgetData.getString("hak_dev_cair_str", "Rp 5,1 jt cair") ?: "Rp 5,1 jt cair"
+        fun updateDynamicPreview(
+            context: Context,
+            appWidgetManager: AppWidgetManager,
+            widgetData: SharedPreferences,
+            force: Boolean = false
+        ) {
+            val amount = widgetData.getString("hak_dev_amount_str", "Rp 0") ?: "Rp 0"
+            val cair = widgetData.getString("hak_dev_cair_str", "Rp 0 cair") ?: "Rp 0 cair"
 
             val themeMode = widgetData.getString("theme_mode", "system") ?: "system"
-            val isDarkTheme = widgetData.getBoolean("is_dark_theme", false)
             val isSystemDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
             val shouldBeDark = when (themeMode) {
                 "dark" -> true
                 "light" -> false
-                else -> isDarkTheme || isSystemDark
+                else -> isSystemDark
             }
 
-            val contentHash = "$themeMode|$isDarkTheme|$isSystemDark|$shouldBeDark|$amount|$cair"
+            val contentHash = "$themeMode|$isSystemDark|$shouldBeDark|$amount|$cair"
             val now = System.currentTimeMillis()
-            if (contentHash == lastPreviewHash && (now - lastPreviewTime < 25 * 60 * 1000L)) {
+            if (!force && contentHash == lastPreviewHash && (now - lastPreviewTime < 25 * 60 * 1000L)) {
                 return
             }
 
             if (Build.VERSION.SDK_INT >= 35) {
                 try {
-                    val previewLayout = if (shouldBeDark) R.layout.widget_hak_dev_preview_dark else R.layout.widget_hak_dev_preview_light
+                    // Preview di Widget Picker sistem launcher selalu default Light Mode
+                    val previewLayout = R.layout.widget_hak_dev_preview_light
                     val previewViews = RemoteViews(context.packageName, previewLayout).apply {
                         setTextViewText(R.id.preview_hak_dev_amount, amount)
                         setTextViewText(R.id.preview_hak_dev_cair, cair)

@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/config/app_config.dart';
 import '../core/network/dio_client.dart';
 import '../core/storage/secure_storage_service.dart';
+import '../features/auth/domain/user_model.dart';
 import '../features/developer/dashboard/domain/dashboard_model.dart';
 import 'widget_service.dart';
 
@@ -29,6 +30,23 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     debugPrint('[FCM Background] Received data message: $data');
 
     final storage = SecureStorageService();
+    final token = await storage.getToken();
+    if (token == null || token.isEmpty) {
+      debugPrint('[FCM Background] Pengguna belum login atau dalam posisi logout. Mengabaikan notifikasi & sinkronisasi.');
+      return;
+    }
+
+    final userCache = await storage.getUserCache();
+    if (userCache != null) {
+      try {
+        final user = UserModel.fromRawJson(userCache);
+        if (!user.isDeveloper) {
+          debugPrint('[FCM Background] Pengguna bukan role ryu_dev. Mengabaikan notifikasi.');
+          return;
+        }
+      } catch (_) {}
+    }
+
     final widgetService = WidgetService(storage: storage);
 
     DeveloperDashboardData? dashboardData;
@@ -213,6 +231,23 @@ class FcmService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       debugPrint('[FCM Foreground] Pesan diterima: ${message.data}');
 
+      final token = await storage.getToken();
+      if (token == null || token.isEmpty) {
+        debugPrint('[FCM Foreground] Pengguna belum login atau dalam posisi logout. Mengabaikan pesan.');
+        return;
+      }
+
+      final userCache = await storage.getUserCache();
+      if (userCache != null) {
+        try {
+          final user = UserModel.fromRawJson(userCache);
+          if (!user.isDeveloper) {
+            debugPrint('[FCM Foreground] Pengguna bukan role ryu_dev. Mengabaikan pesan.');
+            return;
+          }
+        } catch (_) {}
+      }
+
       // Jika ada instruksi update widget
       if (message.data['action'] == 'sync_widgets' || message.data.containsKey('payload')) {
         try {
@@ -288,7 +323,10 @@ class FcmService {
     });
 
     // 5. Interaksi saat notifikasi di-tap dari background
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+      final token = await storage.getToken();
+      if (token == null || token.isEmpty) return;
+
       debugPrint('[FCM Tap] Notifikasi dibuka dari background: ${message.data}');
       final route = message.data['route'] as String? ?? '/dev/payouts';
       onNavigate?.call(route);
@@ -297,13 +335,16 @@ class FcmService {
     // 6. Interaksi saat notifikasi di-tap saat app mati total (cold start)
     final initialMessage = await _fcm.getInitialMessage();
     if (initialMessage != null) {
-      debugPrint('[FCM Cold] Notifikasi membuka aplikasi dari mati: ${initialMessage.data}');
-      final route = initialMessage.data['route'] as String? ?? '/dev/payouts';
-      onNavigate?.call(route);
+      final token = await storage.getToken();
+      if (token != null && token.isNotEmpty) {
+        debugPrint('[FCM Cold] Notifikasi membuka aplikasi dari mati: ${initialMessage.data}');
+        final route = initialMessage.data['route'] as String? ?? '/dev/payouts';
+        onNavigate?.call(route);
+      }
     }
   }
 
-  /// Ambil token dari Firebase dan kirim ke backend Laravel
+  /// Ambil token dari Firebase dan kirim ke backend Laravel jika user role developer
   Future<void> registerTokenToServer() async {
     try {
       final token = await _fcm.getToken();
@@ -317,11 +358,42 @@ class FcmService {
     }
   }
 
+  /// Hapus token di server Laravel & Firebase Messaging saat logout
+  Future<void> unregisterTokenFromServer() async {
+    try {
+      final authToken = await storage.getToken();
+      if (authToken != null && authToken.isNotEmpty) {
+        try {
+          await dio.post(
+            '/developer/fcm-token',
+            data: {'fcm_token': ''},
+          );
+        } catch (_) {}
+      }
+      await _fcm.deleteToken();
+      await storage.deleteKey('fcm_device_token');
+      debugPrint('[FCM] Token berhasil dihapus dari server & Firebase Messaging');
+    } catch (e) {
+      debugPrint('[FCM] Error unregistering token: $e');
+    }
+  }
+
   Future<void> _sendTokenToServer(String token) async {
     final authToken = await storage.getToken();
     if (authToken == null || authToken.isEmpty) {
       // User belum login, token akan dikirim saat login sukses
       return;
+    }
+
+    final userCache = await storage.getUserCache();
+    if (userCache != null) {
+      try {
+        final user = UserModel.fromRawJson(userCache);
+        if (!user.isDeveloper) {
+          debugPrint('[FCM] User bukan role ryu_dev. Tidak mengirim token ke server.');
+          return;
+        }
+      } catch (_) {}
     }
 
     try {

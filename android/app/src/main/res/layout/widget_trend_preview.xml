@@ -3,7 +3,7 @@
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_bg"
+    android:background="@drawable/widget_bg_light"
     android:orientation="vertical"
     android:paddingStart="18dp"
     android:paddingEnd="18dp"
@@ -20,7 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tren pencairan"
-            android:textColor="@color/widget_preview_text_primary"
+            android:textColor="@color/widget_light_text_primary"
             android:textSize="15.5sp"
             android:textStyle="bold" />
 
@@ -30,7 +30,7 @@
             android:layout_below="@id/trend_title"
             android:layout_marginTop="1dp"
             android:text="7 hari terakhir"
-            android:textColor="@color/widget_preview_text_secondary"
+            android:textColor="@color/widget_light_text_secondary"
             android:textSize="11sp" />
 
         <TextView
@@ -38,13 +38,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:background="@drawable/badge_trend_bg"
+            android:background="@drawable/badge_trend_bg_light"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
-            android:text="+12,4%"
-            android:textColor="@color/widget_preview_badge_text"
+            android:text="0%"
+            android:textColor="@color/widget_light_badge_text"
             android:textSize="11sp"
             android:textStyle="bold" />
     </RelativeLayout>
@@ -66,7 +66,7 @@
             android:orientation="vertical"
             android:weightSum="2">
 
-            <!-- Level Atas (Maksimal: Rp 345 rb) -->
+            <!-- Level Atas (Maksimal: Rp 0) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -78,8 +78,8 @@
                     android:layout_width="48dp"
                     android:layout_height="wrap_content"
                     android:singleLine="true"
-                    android:text="Rp 345 rb"
-                    android:textColor="@color/widget_preview_text_secondary"
+                    android:text="Rp 0"
+                    android:textColor="@color/widget_light_text_secondary"
                     android:textSize="8.5sp"
                     android:textStyle="bold" />
 
@@ -87,7 +87,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginStart="4dp"
-                    android:background="@color/widget_preview_guideline" />
+                    android:background="@color/widget_light_guideline" />
             </LinearLayout>
 
             <FrameLayout
@@ -95,7 +95,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <!-- Level Tengah (Setengah: Rp 173 rb) -->
+            <!-- Level Tengah (Setengah: Rp 0) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -107,15 +107,15 @@
                     android:layout_width="48dp"
                     android:layout_height="wrap_content"
                     android:singleLine="true"
-                    android:text="Rp 173 rb"
-                    android:textColor="@color/widget_preview_text_muted"
+                    android:text="Rp 0"
+                    android:textColor="@color/widget_light_text_muted"
                     android:textSize="8sp" />
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginStart="4dp"
-                    android:background="@color/widget_preview_guideline_mid" />
+                    android:background="@color/widget_light_guideline_mid" />
             </LinearLayout>
 
             <FrameLayout
@@ -135,14 +135,14 @@
                     android:layout_height="wrap_content"
                     android:singleLine="true"
                     android:text="Rp 0"
-                    android:textColor="@color/widget_preview_text_muted"
+                    android:textColor="@color/widget_light_text_muted"
                     android:textSize="8sp" />
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginStart="4dp"
-                    android:background="@color/widget_preview_guideline" />
+                    android:background="@color/widget_light_guideline" />
             </LinearLayout>
         </LinearLayout>
 
@@ -251,7 +251,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="04 OCT"
-            android:textColor="@color/widget_preview_text_secondary"
+            android:textColor="@color/widget_light_text_secondary"
             android:textSize="9.5sp"
             android:textStyle="bold" />
 
@@ -261,7 +261,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:text="10 OCT"
-            android:textColor="@color/widget_preview_text_secondary"
+            android:textColor="@color/widget_light_text_secondary"
             android:textSize="9.5sp"
             android:textStyle="bold" />
     </RelativeLayout>

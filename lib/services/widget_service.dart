@@ -68,18 +68,32 @@ class WidgetService {
   /// Memeriksa apakah widget harus di-render dalam Dark Mode
   Future<bool> resolveIsDark() async {
     try {
-      final widgetTheme = await storage.getWidgetThemeMode();
-      if (widgetTheme == 'dark') return true;
-      if (widgetTheme == 'light') return false;
-
       final appTheme = await storage.getThemeMode();
       if (appTheme == 'dark') return true;
       if (appTheme == 'light') return false;
 
       return ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark;
     } catch (_) {
-      return true;
+      return ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark;
     }
+  }
+
+  /// Memperbarui preferensi mode tema widget dan menyinkronkan ke launcher preview
+  Future<void> updateThemeMode(String themeModeStr) async {
+    final isDark = switch (themeModeStr) {
+      'dark' => true,
+      'light' => false,
+      _ => ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark,
+    };
+    await HomeWidget.saveWidgetData<String>('theme_mode', themeModeStr);
+    await HomeWidget.saveWidgetData<bool>('is_dark_theme', isDark);
+    try {
+      const channel = MethodChannel('com.example.floafinwatch/app_settings');
+      await channel.invokeMethod('updateWidgetPreviews', {
+        'theme_mode': themeModeStr,
+        'is_dark': isDark,
+      });
+    } catch (_) {}
   }
 
   /// Re-render widget secara instan (misal saat berganti tema gelap/terang)
@@ -94,7 +108,10 @@ class WidgetService {
       await HomeWidget.saveWidgetData<bool>('is_dark_theme', isDark);
       try {
         const channel = MethodChannel('com.example.floafinwatch/app_settings');
-        await channel.invokeMethod('updateWidgetPreviews');
+        await channel.invokeMethod('updateWidgetPreviews', {
+          'theme_mode': themeModeStr,
+          'is_dark': isDark,
+        });
       } catch (_) {}
     }
   }
@@ -237,7 +254,10 @@ class WidgetService {
     // 4. Update system dynamic previews for Android 15+ launcher picker
     try {
       const channel = MethodChannel('com.example.floafinwatch/app_settings');
-      await channel.invokeMethod('updateWidgetPreviews');
+      await channel.invokeMethod('updateWidgetPreviews', {
+        'theme_mode': themeModeStr,
+        'is_dark': isDark,
+      });
     } catch (_) {}
   }
 
@@ -250,5 +270,122 @@ class WidgetService {
     } catch (_) {
       return null;
     }
+  }
+
+  /// Mereset seluruh data widget homescreen dan preview ke kondisi kosong/nol (misal saat logout)
+  Future<void> clearWidgetData() async {
+    _lastRenderedData = null;
+    _lastValid7dChart = null;
+
+    // 1. Hapus cache snapshot lokal
+    await storage.clearWidgetSnapshot();
+
+    // 2. Data kosong (Rp 0 & tidak ada antrean)
+    final isDark = await resolveIsDark();
+    final themeModeStr = await storage.getThemeMode() ?? 'system';
+    await HomeWidget.saveWidgetData<String>('theme_mode', themeModeStr);
+    await HomeWidget.saveWidgetData<bool>('is_dark_theme', isDark);
+
+    // Reset data string dynamic preview
+    await HomeWidget.saveWidgetData<String>('hak_dev_amount_str', 'Rp 0');
+    await HomeWidget.saveWidgetData<String>('hak_dev_cair_str', 'Rp 0 cair');
+    await HomeWidget.saveWidgetData<String>('payout_amount_str', 'Rp 0');
+    await HomeWidget.saveWidgetData<String>('payout_footer_str', 'Tidak ada antrean');
+    await HomeWidget.saveWidgetData<String>('trend_badge_str', '0%');
+    await HomeWidget.saveWidgetData<String>('trend_max_str', 'Rp 0');
+    await HomeWidget.saveWidgetData<String>('trend_mid_str', 'Rp 0');
+
+    for (int i = 0; i < 7; i++) {
+      await HomeWidget.saveWidgetData<double>('trend_pillar_${i + 1}_height', 16.0);
+      await HomeWidget.saveWidgetData<bool>('trend_pillar_${i + 1}_is_peak', false);
+    }
+
+    final now = DateTime.now();
+    const monthEnglish = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    final dStart = now.subtract(const Duration(days: 6));
+    final startStr = '${dStart.day.toString().padLeft(2, '0')} ${monthEnglish[dStart.month - 1]}';
+    final endStr = '${now.day.toString().padLeft(2, '0')} ${monthEnglish[now.month - 1]}';
+    await HomeWidget.saveWidgetData<String>('trend_date_start_str', startStr);
+    await HomeWidget.saveWidgetData<String>('trend_date_end_str', endStr);
+
+    final emptyData = DeveloperDashboardData(
+      summary: const FinancialSummary(
+        totalEarned: 0,
+        totalTransferred: 0,
+        pendingPayout: 0,
+        todayEarned: 0,
+        unpaidPayoutCount: 0,
+        waitingPayoutCount: 0,
+        waitingConfirmationCount: 0,
+      ),
+      payoutStatistics: const PayoutStatistics(
+        successful: 0,
+        pending: 0,
+        failed: 0,
+      ),
+      chart: FinancialChartData(
+        period: '7d',
+        labels: [startStr, endStr],
+        values: const [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+      ),
+      lastUpdated: null,
+    );
+
+    final logoImage = await getDecodedLogo();
+
+    // Render ulang gambar widget menjadi state kosong
+    final path1 = await HomeWidget.renderFlutterWidget(
+      Material(
+        type: MaterialType.transparency,
+        child: HakDevWidgetView(data: emptyData, logoImage: logoImage, isDark: isDark),
+      ),
+      key: 'widget_hak_dev_img',
+      logicalSize: const Size(170, 186),
+      pixelRatio: 2.5,
+    );
+    await HomeWidget.saveWidgetData<String>('widget_hak_dev_img', path1);
+    await HomeWidget.updateWidget(
+      name: 'HakDevWidgetProvider',
+      androidName: 'HakDevWidgetProvider',
+    );
+
+    final path2 = await HomeWidget.renderFlutterWidget(
+      Material(
+        type: MaterialType.transparency,
+        child: PayoutWidgetView(data: emptyData, isDark: isDark),
+      ),
+      key: 'widget_payout_img',
+      logicalSize: const Size(170, 186),
+      pixelRatio: 2.5,
+    );
+    await HomeWidget.saveWidgetData<String>('widget_payout_img', path2);
+    await HomeWidget.updateWidget(
+      name: 'PayoutWidgetProvider',
+      androidName: 'PayoutWidgetProvider',
+    );
+
+    final path3 = await HomeWidget.renderFlutterWidget(
+      Material(
+        type: MaterialType.transparency,
+        child: TrendChartWidgetView(data: emptyData, isDark: isDark),
+      ),
+      key: 'widget_trend_img',
+      logicalSize: const Size(368, 186),
+      pixelRatio: 2.5,
+    );
+    await HomeWidget.saveWidgetData<String>('widget_trend_img', path3);
+    await HomeWidget.updateWidget(
+      name: 'TrendChartWidgetProvider',
+      androidName: 'TrendChartWidgetProvider',
+    );
+
+    // Update dynamic preview di launcher
+    try {
+      const channel = MethodChannel('com.example.floafinwatch/app_settings');
+      await channel.invokeMethod('updateWidgetPreviews', {
+        'theme_mode': themeModeStr,
+        'is_dark': isDark,
+      });
+    } catch (_) {}
   }
 }

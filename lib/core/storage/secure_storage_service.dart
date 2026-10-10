@@ -100,9 +100,19 @@ class SecureStorageService {
     return await _storage.read(key: key);
   }
 
+  Future<void> deleteKey(String key) async {
+    await _storage.delete(key: key);
+  }
+
+  Future<void> clearWidgetSnapshot() async {
+    await _storage.delete(key: _keyWidgetSnapshot);
+  }
+
   Future<void> clearAll() async {
     // Only clear authentication session data, keeping device settings like theme intact
     await deleteToken();
     await deleteUserCache();
+    await clearWidgetSnapshot();
+    await _storage.delete(key: 'fcm_device_token');
   }
 }

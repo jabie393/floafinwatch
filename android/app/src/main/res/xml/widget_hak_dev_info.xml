@@ -7,6 +7,6 @@
     android:updatePeriodMillis="1800000"
     android:description="@string/widget_hak_dev_desc"
     android:initialLayout="@layout/widget_hak_dev"
-    android:previewLayout="@layout/widget_hak_dev_preview"
+    android:previewLayout="@layout/widget_hak_dev_preview_light"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen" />

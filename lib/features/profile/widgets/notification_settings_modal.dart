@@ -176,7 +176,7 @@ class _NotificationSettingsModalState extends State<NotificationSettingsModal> {
                           Switch.adaptive(
                             value: allEnabled,
                             onChanged: _toggleAll,
-                            activeColor: const Color(0xFF0284C7),
+                            activeThumbColor: const Color(0xFF0284C7),
                             activeTrackColor: isDark
                                 ? const Color(0xFF0284C7).withValues(alpha: 0.45)
                                 : const Color(0xFFBAE6FD),
@@ -328,7 +328,7 @@ class _NotificationSettingTile extends StatelessWidget {
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF0284C7),
+            activeThumbColor: const Color(0xFF0284C7),
             activeTrackColor: isDark
                 ? const Color(0xFF0284C7).withValues(alpha: 0.45)
                 : const Color(0xFFBAE6FD),

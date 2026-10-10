@@ -1,6 +1,7 @@
 import 'package:floafinwatch/core/errors/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/fcm_service.dart';
+import '../../../services/widget_service.dart';
 import '../data/auth_repository.dart';
 import '../domain/auth_state.dart';
 import '../domain/user_model.dart';
@@ -29,6 +30,11 @@ class AuthNotifier extends Notifier<AuthState> {
       final user = await _repository.restoreSession();
       if (user != null) {
         state = AuthState.authenticated(user);
+        if (user.isDeveloper) {
+          try {
+            await ref.read(fcmServiceProvider).registerTokenToServer();
+          } catch (_) {}
+        }
       } else {
         state = AuthState.unauthenticated();
       }
@@ -48,9 +54,16 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final user = await _repository.login(email: email, password: password);
       state = AuthState.authenticated(user);
-      try {
-        await ref.read(fcmServiceProvider).registerTokenToServer();
-      } catch (_) {}
+      if (user.isDeveloper) {
+        try {
+          await ref.read(fcmServiceProvider).registerTokenToServer();
+        } catch (_) {}
+      } else {
+        try {
+          await ref.read(fcmServiceProvider).unregisterTokenFromServer();
+          await ref.read(widgetServiceProvider).clearWidgetData();
+        } catch (_) {}
+      }
       return true;
     } catch (e) {
       state = AuthState.unauthenticated(e.toString());
@@ -60,7 +73,19 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> logout() async {
     state = AuthState.loading();
+    // 1. Unregister FCM token dari server dan Firebase Messaging
+    try {
+      await ref.read(fcmServiceProvider).unregisterTokenFromServer();
+    } catch (_) {}
+
+    // 2. Wipe sesi & kredensial auth lokal
     await _repository.logout();
+
+    // 3. Reset seluruh widget homescreen & dynamic launcher preview ke kondisi kosong/nol
+    try {
+      await ref.read(widgetServiceProvider).clearWidgetData();
+    } catch (_) {}
+
     state = AuthState.unauthenticated();
   }
 

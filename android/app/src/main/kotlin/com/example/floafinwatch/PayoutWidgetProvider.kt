@@ -25,12 +25,11 @@ class PayoutWidgetProvider : HomeWidgetProvider() {
         val bitmap = if (imagePath != null) BitmapFactory.decodeFile(imagePath) else null
 
         val themeMode = widgetData.getString("theme_mode", "system") ?: "system"
-        val isDarkTheme = widgetData.getBoolean("is_dark_theme", false)
         val isSystemDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         val shouldBeDark = when (themeMode) {
             "dark" -> true
             "light" -> false
-            else -> isDarkTheme || isSystemDark
+            else -> isSystemDark
         }
         val fallbackLayout = if (shouldBeDark) R.layout.widget_payout_preview_dark else R.layout.widget_payout_preview_light
 
@@ -59,28 +58,33 @@ class PayoutWidgetProvider : HomeWidgetProvider() {
         private var lastPreviewTime = 0L
         private var lastPreviewHash = ""
 
-        fun updateDynamicPreview(context: Context, appWidgetManager: AppWidgetManager, widgetData: SharedPreferences) {
+        fun updateDynamicPreview(
+            context: Context,
+            appWidgetManager: AppWidgetManager,
+            widgetData: SharedPreferences,
+            force: Boolean = false
+        ) {
             val amount = widgetData.getString("payout_amount_str", "Rp 0") ?: "Rp 0"
             val footer = widgetData.getString("payout_footer_str", "Tidak ada antrean") ?: "Tidak ada antrean"
 
             val themeMode = widgetData.getString("theme_mode", "system") ?: "system"
-            val isDarkTheme = widgetData.getBoolean("is_dark_theme", false)
             val isSystemDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
             val shouldBeDark = when (themeMode) {
                 "dark" -> true
                 "light" -> false
-                else -> isDarkTheme || isSystemDark
+                else -> isSystemDark
             }
 
-            val contentHash = "$themeMode|$isDarkTheme|$isSystemDark|$shouldBeDark|$amount|$footer"
+            val contentHash = "$themeMode|$isSystemDark|$shouldBeDark|$amount|$footer"
             val now = System.currentTimeMillis()
-            if (contentHash == lastPreviewHash && (now - lastPreviewTime < 25 * 60 * 1000L)) {
+            if (!force && contentHash == lastPreviewHash && (now - lastPreviewTime < 25 * 60 * 1000L)) {
                 return
             }
 
             if (Build.VERSION.SDK_INT >= 35) {
                 try {
-                    val previewLayout = if (shouldBeDark) R.layout.widget_payout_preview_dark else R.layout.widget_payout_preview_light
+                    // Preview di Widget Picker sistem launcher selalu default Light Mode
+                    val previewLayout = R.layout.widget_payout_preview_light
                     val previewViews = RemoteViews(context.packageName, previewLayout).apply {
                         setTextViewText(R.id.preview_payout_amount, amount)
                         setTextViewText(R.id.preview_payout_footer, footer)

@@ -9,6 +9,8 @@ import 'core/theme/theme_notifier.dart';
 import 'features/auth/presentation/auth_notifier.dart';
 import 'services/fcm_service.dart';
 
+import 'services/widget_service.dart';
+
 class LoafinwatchApp extends ConsumerStatefulWidget {
   const LoafinwatchApp({super.key});
 
@@ -16,12 +18,14 @@ class LoafinwatchApp extends ConsumerStatefulWidget {
   ConsumerState<LoafinwatchApp> createState() => _LoafinwatchAppState();
 }
 
-class _LoafinwatchAppState extends ConsumerState<LoafinwatchApp> {
+class _LoafinwatchAppState extends ConsumerState<LoafinwatchApp>
+    with WidgetsBindingObserver {
   StreamSubscription<Uri?>? _widgetSubscription;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _handleInitialUri();
     _widgetSubscription = HomeWidget.widgetClicked.listen(_handleWidgetLaunch);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -43,8 +47,18 @@ class _LoafinwatchAppState extends ConsumerState<LoafinwatchApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _widgetSubscription?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    super.didChangePlatformBrightness();
+    final themeMode = ref.read(themeModeProvider);
+    if (themeMode == ThemeMode.system) {
+      ref.read(widgetServiceProvider).reRenderWidgets();
+    }
   }
 
   Future<void> _handleInitialUri() async {

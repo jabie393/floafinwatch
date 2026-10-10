@@ -25,12 +25,11 @@ class TrendChartWidgetProvider : HomeWidgetProvider() {
         val bitmap = if (imagePath != null) BitmapFactory.decodeFile(imagePath) else null
 
         val themeMode = widgetData.getString("theme_mode", "system") ?: "system"
-        val isDarkTheme = widgetData.getBoolean("is_dark_theme", false)
         val isSystemDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         val shouldBeDark = when (themeMode) {
             "dark" -> true
             "light" -> false
-            else -> isDarkTheme || isSystemDark
+            else -> isSystemDark
         }
         val fallbackLayout = if (shouldBeDark) R.layout.widget_trend_preview_dark else R.layout.widget_trend_preview_light
 
@@ -59,33 +58,38 @@ class TrendChartWidgetProvider : HomeWidgetProvider() {
         private var lastPreviewTime = 0L
         private var lastPreviewHash = ""
 
-        fun updateDynamicPreview(context: Context, appWidgetManager: AppWidgetManager, widgetData: SharedPreferences) {
-            val badge = widgetData.getString("trend_badge_str", "+12,4%") ?: "+12,4%"
-            val max = widgetData.getString("trend_max_str", "Rp 345 rb") ?: "Rp 345 rb"
-            val mid = widgetData.getString("trend_mid_str", "Rp 173 rb") ?: "Rp 173 rb"
+        fun updateDynamicPreview(
+            context: Context,
+            appWidgetManager: AppWidgetManager,
+            widgetData: SharedPreferences,
+            force: Boolean = false
+        ) {
+            val badge = widgetData.getString("trend_badge_str", "0%") ?: "0%"
+            val max = widgetData.getString("trend_max_str", "Rp 0") ?: "Rp 0"
+            val mid = widgetData.getString("trend_mid_str", "Rp 0") ?: "Rp 0"
             val startDate = widgetData.getString("trend_date_start_str", "04 OCT") ?: "04 OCT"
             val endDate = widgetData.getString("trend_date_end_str", "10 OCT") ?: "10 OCT"
 
             val themeMode = widgetData.getString("theme_mode", "system") ?: "system"
-            val isDarkTheme = widgetData.getBoolean("is_dark_theme", false)
             val isSystemDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
             val shouldBeDark = when (themeMode) {
                 "dark" -> true
                 "light" -> false
-                else -> isDarkTheme || isSystemDark
+                else -> isSystemDark
             }
 
-            val contentHash = "$themeMode|$isDarkTheme|$isSystemDark|$shouldBeDark|$badge|$max|$mid|$startDate|$endDate"
+            val contentHash = "$themeMode|$isSystemDark|$shouldBeDark|$badge|$max|$mid|$startDate|$endDate"
             val now = System.currentTimeMillis()
-            if (contentHash == lastPreviewHash && (now - lastPreviewTime < 25 * 60 * 1000L)) {
+            if (!force && contentHash == lastPreviewHash && (now - lastPreviewTime < 25 * 60 * 1000L)) {
                 return
             }
 
             if (Build.VERSION.SDK_INT >= 35) {
                 try {
-                    val previewLayout = if (shouldBeDark) R.layout.widget_trend_preview_dark else R.layout.widget_trend_preview_light
-                    val pillarLightRes = if (shouldBeDark) R.drawable.pillar_light_dark else R.drawable.pillar_light
-                    val pillarPeakRes = if (shouldBeDark) R.drawable.pillar_peak_dark else R.drawable.pillar_peak
+                    // Preview di Widget Picker sistem launcher selalu default Light Mode
+                    val previewLayout = R.layout.widget_trend_preview_light
+                    val pillarLightRes = R.drawable.pillar_light
+                    val pillarPeakRes = R.drawable.pillar_peak
 
                     val previewViews = RemoteViews(context.packageName, previewLayout).apply {
                         setTextViewText(R.id.trend_badge, badge)

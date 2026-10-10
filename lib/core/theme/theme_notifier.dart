@@ -41,8 +41,10 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
         ThemeMode.system => 'system',
       };
       await _storage.saveThemeMode(str);
-      // Re-render widget home screen secara otomatis agar tema widget sinkron
-      ref.read(widgetServiceProvider).reRenderWidgets();
+      // Re-render widget home screen & perbarui preview launcher seketika
+      final widgetService = ref.read(widgetServiceProvider);
+      await widgetService.updateThemeMode(str);
+      await widgetService.reRenderWidgets();
     } catch (_) {
       // Gracefully ignore storage write failures
     }

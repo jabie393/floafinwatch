@@ -106,7 +106,9 @@ class MainActivity : FlutterFragmentActivity() {
                     result.success(isXiaomi())
                 }
                 "updateWidgetPreviews" -> {
-                    updateAllWidgetPreviews()
+                    val themeMode = call.argument<String>("theme_mode")
+                    val isDark = call.argument<Boolean>("is_dark")
+                    updateAllWidgetPreviews(themeMode, isDark)
                     result.success(true)
                 }
                 else -> result.notImplemented()
@@ -118,15 +120,22 @@ class MainActivity : FlutterFragmentActivity() {
         super.onResume()
     }
 
-    private fun updateAllWidgetPreviews() {
+    private fun updateAllWidgetPreviews(themeModeArg: String? = null, isDarkArg: Boolean? = null) {
         if (Build.VERSION.SDK_INT >= 35) {
             try {
                 val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(this)
                 val prefs = getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
 
-                HakDevWidgetProvider.updateDynamicPreview(this, appWidgetManager, prefs)
-                PayoutWidgetProvider.updateDynamicPreview(this, appWidgetManager, prefs)
-                TrendChartWidgetProvider.updateDynamicPreview(this, appWidgetManager, prefs)
+                if (themeModeArg != null) {
+                    prefs.edit()
+                        .putString("theme_mode", themeModeArg)
+                        .putBoolean("is_dark_theme", isDarkArg ?: false)
+                        .commit()
+                }
+
+                HakDevWidgetProvider.updateDynamicPreview(this, appWidgetManager, prefs, force = true)
+                PayoutWidgetProvider.updateDynamicPreview(this, appWidgetManager, prefs, force = true)
+                TrendChartWidgetProvider.updateDynamicPreview(this, appWidgetManager, prefs, force = true)
             } catch (e: Throwable) {
                 android.util.Log.w("MainActivity", "Error in updateAllWidgetPreviews: ${e.message}")
             }

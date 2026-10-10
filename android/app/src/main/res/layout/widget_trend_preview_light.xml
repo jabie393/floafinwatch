@@ -43,7 +43,7 @@
             android:paddingEnd="8dp"
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
-            android:text="+12,4%"
+            android:text="0%"
             android:textColor="@color/widget_light_badge_text"
             android:textSize="11sp"
             android:textStyle="bold" />
@@ -66,7 +66,7 @@
             android:orientation="vertical"
             android:weightSum="2">
 
-            <!-- Level Atas (Maksimal: Rp 345 rb) -->
+            <!-- Level Atas (Maksimal: Rp 0) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -78,7 +78,7 @@
                     android:layout_width="48dp"
                     android:layout_height="wrap_content"
                     android:singleLine="true"
-                    android:text="Rp 345 rb"
+                    android:text="Rp 0"
                     android:textColor="@color/widget_light_text_secondary"
                     android:textSize="8.5sp"
                     android:textStyle="bold" />
@@ -95,7 +95,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-            <!-- Level Tengah (Setengah: Rp 173 rb) -->
+            <!-- Level Tengah (Setengah: Rp 0) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -107,7 +107,7 @@
                     android:layout_width="48dp"
                     android:layout_height="wrap_content"
                     android:singleLine="true"
-                    android:text="Rp 173 rb"
+                    android:text="Rp 0"
                     android:textColor="@color/widget_light_text_muted"
                     android:textSize="8sp" />
 
