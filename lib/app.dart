@@ -81,6 +81,14 @@ class _LoafinwatchAppState extends ConsumerState<LoafinwatchApp>
       } else {
         ref.read(pendingRouteProvider.notifier).setRoute('/dev/payouts');
       }
+    } else if (uri.host == 'transactions' ||
+        uri.path.contains('transactions') ||
+        uriStr.contains('transactions')) {
+      if (isAuthDev) {
+        ref.read(appRouterProvider).go('/dev/transactions');
+      } else {
+        ref.read(pendingRouteProvider.notifier).setRoute('/dev/transactions');
+      }
     } else if (uri.host == 'dashboard' ||
         uri.path.contains('dashboard') ||
         uriStr.contains('dashboard')) {

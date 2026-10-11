@@ -798,21 +798,26 @@ class _AutostartGuideModalState extends State<AutostartGuideModal>
           ),
         ),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 5,
+            vertical: 1.5,
+          ),
           decoration: BoxDecoration(
             color: const Color(0xFF0284C7).withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(5),
             border: Border.all(
               color: const Color(0xFF0284C7).withValues(alpha: 0.35),
               width: 0.8,
             ),
           ),
-          child: const Text(
+          child: Text(
             'AKTIF ✓',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 8.5,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF38BDF8),
+              color: isDark
+                  ? const Color(0xFF38BDF8)
+                  : const Color(0xFF0284C7),
             ),
           ),
         ),

@@ -148,7 +148,13 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
             color: Color(0xFF0284C7),
           ),
         ),
-        payload: json.encode(data),
+        payload: json.encode({
+          ...data,
+          'title': titleStr,
+          'body': bodyStr,
+          'type': type,
+          'route': FcmService.resolveTargetRoute(data),
+        }),
       );
     } else {
       debugPrint('[FCM Background] Banner notifikasi dilewati berdasarkan preferensi pengguna (type=$type)');
@@ -203,12 +209,14 @@ class FcmService {
       onDidReceiveNotificationResponse: (response) {
         // Klik notifikasi saat app aktif / foreground
         debugPrint('[FCM Local] Notification clicked: ${response.payload}');
-        String targetRoute = '/dev/payouts';
+        String targetRoute = '/dev/dashboard';
         if (response.payload != null && response.payload!.isNotEmpty) {
           try {
             final payload = json.decode(response.payload!) as Map<String, dynamic>;
-            targetRoute = payload['route'] as String? ?? '/dev/payouts';
-          } catch (_) {}
+            targetRoute = resolveTargetRoute(payload);
+          } catch (_) {
+            targetRoute = '/dev/dashboard';
+          }
         }
         onNavigate?.call(targetRoute);
       },
@@ -315,7 +323,13 @@ class FcmService {
               color: Color(0xFF0284C7),
             ),
           ),
-          payload: json.encode(message.data),
+          payload: json.encode({
+            ...message.data,
+            'title': titleStr,
+            'body': bodyStr,
+            'type': type,
+            'route': resolveTargetRoute(message.data),
+          }),
         );
       } else {
         debugPrint('[FCM Foreground] Banner notifikasi dilewati berdasarkan preferensi pengguna (type=$type)');
@@ -328,20 +342,85 @@ class FcmService {
       if (token == null || token.isEmpty) return;
 
       debugPrint('[FCM Tap] Notifikasi dibuka dari background: ${message.data}');
-      final route = message.data['route'] as String? ?? '/dev/payouts';
+      final route = resolveTargetRoute(message.data);
       onNavigate?.call(route);
     });
 
-    // 6. Interaksi saat notifikasi di-tap saat app mati total (cold start)
+    // 6. Interaksi saat notifikasi di-tap saat app mati total (cold start FCM)
     final initialMessage = await _fcm.getInitialMessage();
     if (initialMessage != null) {
       final token = await storage.getToken();
       if (token != null && token.isNotEmpty) {
         debugPrint('[FCM Cold] Notifikasi membuka aplikasi dari mati: ${initialMessage.data}');
-        final route = initialMessage.data['route'] as String? ?? '/dev/payouts';
+        final route = resolveTargetRoute(initialMessage.data);
         onNavigate?.call(route);
       }
     }
+
+    // 7. Interaksi saat notifikasi lokal di-tap saat app mati total (cold start Local Notification)
+    try {
+      final launchDetails = await _localNotifications.getNotificationAppLaunchDetails();
+      if (launchDetails != null && launchDetails.didNotificationLaunchApp) {
+        final payloadStr = launchDetails.notificationResponse?.payload;
+        if (payloadStr != null && payloadStr.isNotEmpty) {
+          final payload = json.decode(payloadStr) as Map<String, dynamic>;
+          final route = resolveTargetRoute(payload);
+          debugPrint('[FCM Local Cold] Local notification launched app with route: $route');
+          onNavigate?.call(route);
+        }
+      }
+    } catch (_) {}
+  }
+
+  /// Memetakan data payload notifikasi ke route yang tepat di aplikasi:
+  /// - Transaksi -> /dev/transactions
+  /// - Payout -> /dev/payouts
+  static String resolveTargetRoute(Map<String, dynamic>? data) {
+    if (data == null || data.isEmpty) return '/dev/dashboard';
+
+    // 1. Jika rute eksplisit ditentukan oleh backend
+    final explicitRoute = data['route']?.toString().trim();
+    if (explicitRoute != null && explicitRoute.isNotEmpty) {
+      if (explicitRoute.contains('transaction')) return '/dev/transactions';
+      if (explicitRoute.contains('payout')) return '/dev/payouts';
+      if (explicitRoute.contains('dashboard')) return '/dev/dashboard';
+      return explicitRoute;
+    }
+
+    // 2. Berdasarkan field 'type' (transaction / payout)
+    final type = data['type']?.toString().toLowerCase().trim();
+    if (type == 'transaction') return '/dev/transactions';
+    if (type == 'payout') return '/dev/payouts';
+
+    // 3. Berdasarkan atribut kunci ID/Order/No
+    if (data.containsKey('payment_id') || data.containsKey('order_id')) {
+      return '/dev/transactions';
+    }
+    if (data.containsKey('payout_id') || data.containsKey('payout_no')) {
+      return '/dev/payouts';
+    }
+
+    // 4. Fallback pencocokan kata kunci pada judul & pesan
+    final title = (data['title'] ?? '').toString().toLowerCase();
+    final body = (data['body'] ?? '').toString().toLowerCase();
+
+    if (title.contains('transaksi') ||
+        body.contains('transaksi') ||
+        title.contains('hak dev') ||
+        body.contains('hak dev')) {
+      return '/dev/transactions';
+    }
+
+    if (title.contains('payout') ||
+        body.contains('payout') ||
+        title.contains('antrean') ||
+        body.contains('antrean') ||
+        title.contains('cair') ||
+        body.contains('cair')) {
+      return '/dev/payouts';
+    }
+
+    return '/dev/dashboard';
   }
 
   /// Ambil token dari Firebase dan kirim ke backend Laravel jika user role developer

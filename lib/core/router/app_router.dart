@@ -40,6 +40,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ref.read(pendingRouteProvider.notifier).setRoute('/dev/payouts');
           router.go('/splash');
         }
+      } else if (uriStr.contains('transaction')) {
+        if (isAuthDev) {
+          router.go('/dev/transactions');
+        } else {
+          ref.read(pendingRouteProvider.notifier).setRoute('/dev/transactions');
+          router.go('/splash');
+        }
       } else if (uriStr.contains('dashboard')) {
         if (isAuthDev) {
           router.go('/dev/dashboard');
