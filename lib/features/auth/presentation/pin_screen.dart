@@ -8,6 +8,7 @@ import 'package:local_auth_android/local_auth_android.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/network/network_service.dart';
+import '../../../core/router/app_router.dart';
 import '../../shared/views/ios_offline_banner.dart';
 import 'auth_notifier.dart';
 
@@ -186,11 +187,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
           _statusMessage = 'Biometrik terverifikasi';
         });
 
-        ref.read(authNotifierProvider.notifier).unlockPin();
-
-        await Future.delayed(const Duration(milliseconds: 650));
+        await Future.delayed(const Duration(milliseconds: 550));
         if (!mounted) return;
-        context.go('/dev/dashboard');
+        _navigateToDestination();
       }
     } catch (_) {
       // User membatalkan dialog biometrik
@@ -273,9 +272,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
         _statusMessage = 'PIN benar';
       });
 
-      await Future.delayed(const Duration(milliseconds: 650));
+      await Future.delayed(const Duration(milliseconds: 550));
       if (!mounted) return;
-      context.go('/dev/dashboard');
+      _navigateToDestination();
     } else if (status == PinVerificationStatus.offline) {
       HapticFeedback.lightImpact();
       _shakeController.forward(from: 0.0);
@@ -344,9 +343,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
             _statusMessage = 'PIN berhasil dibuat!';
           });
 
-          await Future.delayed(const Duration(milliseconds: 700));
+          await Future.delayed(const Duration(milliseconds: 600));
           if (!mounted) return;
-          context.go('/dev/dashboard');
+          _navigateToDestination();
         } else {
           _triggerSetupError(
             'Gagal menyimpan PIN ke server. Silakan coba lagi.',
@@ -358,6 +357,17 @@ class _PinScreenState extends ConsumerState<PinScreen>
           'PIN tidak cocok! Silakan masukkan PIN baru dari awal.',
         );
       }
+    }
+  }
+
+  void _navigateToDestination() {
+    if (!mounted) return;
+    final pending = ref.read(pendingRouteProvider);
+    final target = (pending != null && pending.isNotEmpty) ? pending : '/dev/dashboard';
+
+    ref.read(authNotifierProvider.notifier).unlockPin();
+    if (mounted) {
+      context.go(target);
     }
   }
 

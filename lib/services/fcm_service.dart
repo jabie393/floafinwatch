@@ -108,13 +108,17 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     final isTransaction = type == 'transaction' ||
         data.containsKey('payment_id') ||
         data.containsKey('order_id') ||
-        titleStr.toLowerCase().contains('transaksi');
+        titleStr.toLowerCase().contains('transaksi') ||
+        titleStr.toLowerCase().contains('hak dev');
 
     final isPayout = type == 'payout' ||
         data.containsKey('payout_id') ||
         data.containsKey('payout_no') ||
         titleStr.toLowerCase().contains('payout') ||
-        titleStr.toLowerCase().contains('antrean');
+        titleStr.toLowerCase().contains('antrean') ||
+        titleStr.toLowerCase().contains('konfirmasi') ||
+        titleStr.toLowerCase().contains('bayar ulang') ||
+        titleStr.toLowerCase().contains('repay');
 
     bool shouldShowBanner = true;
     if (isTransaction) {
@@ -288,13 +292,17 @@ class FcmService {
       final isTransaction = type == 'transaction' ||
           data.containsKey('payment_id') ||
           data.containsKey('order_id') ||
-          titleStr.toLowerCase().contains('transaksi');
+          titleStr.toLowerCase().contains('transaksi') ||
+          titleStr.toLowerCase().contains('hak dev');
 
       final isPayout = type == 'payout' ||
           data.containsKey('payout_id') ||
           data.containsKey('payout_no') ||
           titleStr.toLowerCase().contains('payout') ||
-          titleStr.toLowerCase().contains('antrean');
+          titleStr.toLowerCase().contains('antrean') ||
+          titleStr.toLowerCase().contains('konfirmasi') ||
+          titleStr.toLowerCase().contains('bayar ulang') ||
+          titleStr.toLowerCase().contains('repay');
 
       bool shouldShowBanner = true;
       if (isTransaction) {
@@ -407,7 +415,11 @@ class FcmService {
     if (title.contains('transaksi') ||
         body.contains('transaksi') ||
         title.contains('hak dev') ||
-        body.contains('hak dev')) {
+        body.contains('hak dev') ||
+        title.contains('pendapatan') ||
+        body.contains('pendapatan') ||
+        title.contains('order') ||
+        body.contains('order')) {
       return '/dev/transactions';
     }
 
@@ -416,7 +428,13 @@ class FcmService {
         title.contains('antrean') ||
         body.contains('antrean') ||
         title.contains('cair') ||
-        body.contains('cair')) {
+        body.contains('cair') ||
+        title.contains('konfirmasi') ||
+        body.contains('konfirmasi') ||
+        title.contains('bayar ulang') ||
+        body.contains('bayar ulang') ||
+        title.contains('repay') ||
+        body.contains('repay')) {
       return '/dev/payouts';
     }
 

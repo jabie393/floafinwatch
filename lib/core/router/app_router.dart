@@ -30,25 +30,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     onException: (context, state, router) {
       final uriStr = state.uri.toString();
       final authState = ref.read(authNotifierProvider);
-      final isAuthDev =
-          authState.isAuthenticated && authState.user?.isDeveloper == true;
+      final isUnlockedDev = authState.isAuthenticated &&
+          authState.user?.isDeveloper == true &&
+          authState.isPinUnlocked;
 
       if (uriStr.contains('payouts')) {
-        if (isAuthDev) {
+        if (isUnlockedDev) {
           router.go('/dev/payouts');
         } else {
           ref.read(pendingRouteProvider.notifier).setRoute('/dev/payouts');
           router.go('/splash');
         }
       } else if (uriStr.contains('transaction')) {
-        if (isAuthDev) {
+        if (isUnlockedDev) {
           router.go('/dev/transactions');
         } else {
           ref.read(pendingRouteProvider.notifier).setRoute('/dev/transactions');
           router.go('/splash');
         }
       } else if (uriStr.contains('dashboard')) {
-        if (isAuthDev) {
+        if (isUnlockedDev) {
           router.go('/dev/dashboard');
         } else {
           ref.read(pendingRouteProvider.notifier).setRoute('/dev/dashboard');

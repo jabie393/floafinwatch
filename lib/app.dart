@@ -70,33 +70,31 @@ class _LoafinwatchAppState extends ConsumerState<LoafinwatchApp>
     if (uri == null) return;
     final uriStr = uri.toString();
     final authState = ref.read(authNotifierProvider);
-    final isAuthDev =
-        authState.isAuthenticated && authState.user?.isDeveloper == true;
+    final isUnlocked = authState.isAuthenticated &&
+        authState.user?.isDeveloper == true &&
+        authState.isPinUnlocked;
 
+    final String targetRoute;
     if (uri.host == 'payouts' ||
         uri.path.contains('payouts') ||
         uriStr.contains('payouts')) {
-      if (isAuthDev) {
-        ref.read(appRouterProvider).go('/dev/payouts');
-      } else {
-        ref.read(pendingRouteProvider.notifier).setRoute('/dev/payouts');
-      }
+      targetRoute = '/dev/payouts';
     } else if (uri.host == 'transactions' ||
         uri.path.contains('transactions') ||
         uriStr.contains('transactions')) {
-      if (isAuthDev) {
-        ref.read(appRouterProvider).go('/dev/transactions');
-      } else {
-        ref.read(pendingRouteProvider.notifier).setRoute('/dev/transactions');
-      }
+      targetRoute = '/dev/transactions';
     } else if (uri.host == 'dashboard' ||
         uri.path.contains('dashboard') ||
         uriStr.contains('dashboard')) {
-      if (isAuthDev) {
-        ref.read(appRouterProvider).go('/dev/dashboard');
-      } else {
-        ref.read(pendingRouteProvider.notifier).setRoute('/dev/dashboard');
-      }
+      targetRoute = '/dev/dashboard';
+    } else {
+      targetRoute = '/dev/dashboard';
+    }
+
+    if (isUnlocked) {
+      ref.read(appRouterProvider).go(targetRoute);
+    } else {
+      ref.read(pendingRouteProvider.notifier).setRoute(targetRoute);
     }
   }
 
