@@ -203,6 +203,7 @@ class PayoutWidgetView extends StatelessWidget {
     final pending = data?.summary.pendingPayout ?? 0;
     final waitingPayoutCount = data?.summary.waitingPayoutCount ?? 0;
     final waitingConfirmationCount = data?.summary.waitingConfirmationCount ?? 0;
+    final rejectedPayoutCount = data?.summary.rejectedPayoutCount ?? 0;
 
     // Menentukan status & teks footer:
     final String footerText;
@@ -211,8 +212,8 @@ class PayoutWidgetView extends StatelessWidget {
     final Color iconColor;
     final IconData headerIcon;
 
-    if (waitingConfirmationCount > 0 && waitingPayoutCount > 0) {
-      footerText = '$waitingConfirmationCount konfirmasi · $waitingPayoutCount antre';
+    if (waitingConfirmationCount > 0 && (rejectedPayoutCount > 0 || waitingPayoutCount > 0)) {
+      footerText = '$waitingConfirmationCount konfirmasi · ${(rejectedPayoutCount + waitingPayoutCount)} antre';
       footerColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
       iconBgColor = isDark ? const Color(0x330284C7) : const Color(0xFFE0EDFB);
       iconColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
@@ -223,6 +224,18 @@ class PayoutWidgetView extends StatelessWidget {
       iconBgColor = isDark ? const Color(0x330284C7) : const Color(0xFFE0EDFB);
       iconColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
       headerIcon = Icons.pending_actions_rounded;
+    } else if (rejectedPayoutCount > 0 && waitingPayoutCount > 0) {
+      footerText = '$rejectedPayoutCount bayar ulang · $waitingPayoutCount antre';
+      footerColor = isDark ? const Color(0xFFFB7185) : const Color(0xFFE11D48);
+      iconBgColor = isDark ? const Color(0x33F43F5E) : const Color(0xFFFFE4E6);
+      iconColor = isDark ? const Color(0xFFFB7185) : const Color(0xFFE11D48);
+      headerIcon = Icons.replay_circle_filled_rounded;
+    } else if (rejectedPayoutCount > 0) {
+      footerText = rejectedPayoutCount == 1 ? '1 perlu bayar ulang' : '$rejectedPayoutCount perlu bayar ulang';
+      footerColor = isDark ? const Color(0xFFFB7185) : const Color(0xFFE11D48);
+      iconBgColor = isDark ? const Color(0x33F43F5E) : const Color(0xFFFFE4E6);
+      iconColor = isDark ? const Color(0xFFFB7185) : const Color(0xFFE11D48);
+      headerIcon = Icons.replay_circle_filled_rounded;
     } else if (waitingPayoutCount > 0) {
       footerText = waitingPayoutCount == 1 ? 'Menunggu transfer' : '$waitingPayoutCount menunggu transfer';
       footerColor = isDark ? const Color(0xFFFBBF24) : const Color(0xFF6C8494);

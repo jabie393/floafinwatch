@@ -46,7 +46,7 @@
             android:resource="@color/notification_accent" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="floafinwatch_channel" />
+            android:value="floafinwatch_v2_channel" />
 
         <!-- Home Screen Widgets (iOS Liquid Glass Theme) -->
         <receiver

@@ -1,5 +1,6 @@
 import 'package:floafinwatch/core/errors/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import '../../../services/fcm_service.dart';
 import '../../../services/widget_service.dart';
 import '../data/auth_repository.dart';
@@ -30,12 +31,14 @@ class AuthNotifier extends Notifier<AuthState> {
       final user = await _repository.restoreSession();
       if (user != null) {
         state = AuthState.authenticated(user);
+        await HomeWidget.saveWidgetData<bool>('is_logged_in', true);
         if (user.isDeveloper) {
           try {
             await ref.read(fcmServiceProvider).registerTokenToServer();
           } catch (_) {}
         }
       } else {
+        await HomeWidget.saveWidgetData<bool>('is_logged_in', false);
         state = AuthState.unauthenticated();
       }
     } on AppException catch (e) {
@@ -55,10 +58,12 @@ class AuthNotifier extends Notifier<AuthState> {
       final user = await _repository.login(email: email, password: password);
       state = AuthState.authenticated(user);
       if (user.isDeveloper) {
+        await HomeWidget.saveWidgetData<bool>('is_logged_in', true);
         try {
           await ref.read(fcmServiceProvider).registerTokenToServer();
         } catch (_) {}
       } else {
+        await HomeWidget.saveWidgetData<bool>('is_logged_in', false);
         try {
           await ref.read(fcmServiceProvider).unregisterTokenFromServer();
           await ref.read(widgetServiceProvider).clearWidgetData();
@@ -73,6 +78,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> logout() async {
     state = AuthState.loading();
+    await HomeWidget.saveWidgetData<bool>('is_logged_in', false);
     // 1. Unregister FCM token dari server dan Firebase Messaging
     try {
       await ref.read(fcmServiceProvider).unregisterTokenFromServer();

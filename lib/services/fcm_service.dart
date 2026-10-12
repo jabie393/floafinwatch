@@ -5,18 +5,24 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import '../core/config/app_config.dart';
 import '../core/network/dio_client.dart';
+import '../core/network/reverb_service.dart';
 import '../core/storage/secure_storage_service.dart';
 import '../features/auth/domain/user_model.dart';
+import '../features/auth/presentation/auth_notifier.dart';
 import '../features/developer/dashboard/domain/dashboard_model.dart';
+import '../features/developer/dashboard/presentation/dashboard_notifier.dart';
+import '../features/developer/payouts/payouts_screen.dart';
+import '../features/developer/transactions/transactions_screen.dart';
 import 'widget_service.dart';
 
 final fcmServiceProvider = Provider<FcmService>((ref) {
   final dio = ref.watch(dioProvider);
   final storage = ref.watch(secureStorageServiceProvider);
   final widgetService = ref.watch(widgetServiceProvider);
-  return FcmService(dio: dio, storage: storage, widgetService: widgetService);
+  return FcmService(ref: ref, dio: dio, storage: storage, widgetService: widgetService);
 });
 
 /// Top-level background handler untuk menerima sinyal FCM saat app ditutup/background
@@ -30,22 +36,36 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     debugPrint('[FCM Background] Received data message: $data');
 
     final storage = SecureStorageService();
-    final token = await storage.getToken();
-    if (token == null || token.isEmpty) {
+
+    // Verifikasi status login yang tangguh terhadap Keystore background isolate
+    bool isLoggedIn = true;
+    try {
+      final savedLogin = await HomeWidget.getWidgetData<bool>('is_logged_in');
+      if (savedLogin != null) {
+        isLoggedIn = savedLogin;
+      } else {
+        final token = await storage.getToken();
+        isLoggedIn = token != null && token.isNotEmpty;
+      }
+    } catch (_) {
+      isLoggedIn = true;
+    }
+
+    if (!isLoggedIn) {
       debugPrint('[FCM Background] Pengguna belum login atau dalam posisi logout. Mengabaikan notifikasi & sinkronisasi.');
       return;
     }
 
-    final userCache = await storage.getUserCache();
-    if (userCache != null) {
-      try {
+    try {
+      final userCache = await storage.getUserCache();
+      if (userCache != null) {
         final user = UserModel.fromRawJson(userCache);
         if (!user.isDeveloper) {
           debugPrint('[FCM Background] Pengguna bukan role ryu_dev. Mengabaikan notifikasi.');
           return;
         }
-      } catch (_) {}
-    }
+      }
+    } catch (_) {}
 
     final widgetService = WidgetService(storage: storage);
 
@@ -121,32 +141,45 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         titleStr.toLowerCase().contains('repay');
 
     bool shouldShowBanner = true;
-    if (isTransaction) {
-      final txEnabled = await storage.isTransactionNotificationEnabled();
-      if (!txEnabled) shouldShowBanner = false;
-    }
-    if (isPayout) {
-      final payoutEnabled = await storage.isPayoutNotificationEnabled();
-      if (!payoutEnabled) shouldShowBanner = false;
-    }
+    try {
+      if (isTransaction) {
+        final txEnabled = await storage.isTransactionNotificationEnabled();
+        if (!txEnabled) shouldShowBanner = false;
+      }
+      if (isPayout) {
+        final payoutEnabled = await storage.isPayoutNotificationEnabled();
+        if (!payoutEnabled) shouldShowBanner = false;
+      }
+    } catch (_) {}
 
-    if (shouldShowBanner && titleStr.isNotEmpty) {
+    // Jika pesan FCM memiliki payload 'notification' resmi (message.notification != null),
+    // OS Android (Google Play Services) SUDAH menampilkannya di status bar secara native.
+    // Jangan panggil localNotifications.show lagi di background agar notifikasi tidak muncul 2x!
+    final hasNativeNotification = message.notification != null;
+
+    if (!hasNativeNotification && shouldShowBanner && titleStr.isNotEmpty) {
       final localNotifications = FlutterLocalNotificationsPlugin();
       const androidInit = AndroidInitializationSettings('@drawable/ic_notification');
       await localNotifications.initialize(
         settings: const InitializationSettings(android: androidInit),
       );
+      await localNotifications
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(FcmService._channel);
+
       await localNotifications.show(
         id: message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
         title: titleStr,
         body: bodyStr,
         notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
-            'floafinwatch_channel',
+            'floafinwatch_v2_channel',
             'Notifikasi Payout & Transaksi F Loafinwatch',
             channelDescription: 'Saluran notifikasi untuk update payout dan transaksi developer realtime',
             importance: Importance.max,
             priority: Priority.high,
+            playSound: true,
+            sound: RawResourceAndroidNotificationSound('floafinwatch'),
             icon: '@drawable/ic_notification',
             largeIcon: DrawableResourceAndroidBitmap('@mipmap/floafinwatch'),
             color: Color(0xFF0284C7),
@@ -169,6 +202,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 class FcmService {
+  final Ref ref;
   final Dio dio;
   final SecureStorageService storage;
   final WidgetService widgetService;
@@ -177,17 +211,19 @@ class FcmService {
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
   FcmService({
+    required this.ref,
     required this.dio,
     required this.storage,
     required this.widgetService,
   });
 
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
-    'floafinwatch_channel',
+    'floafinwatch_v2_channel',
     'Notifikasi Payout & Transaksi F Loafinwatch',
     description: 'Saluran notifikasi untuk update payout dan transaksi developer realtime',
     importance: Importance.max,
     playSound: true,
+    sound: RawResourceAndroidNotificationSound('floafinwatch'),
     enableVibration: true,
   );
 
@@ -204,6 +240,12 @@ class FcmService {
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       debugPrint('[FCM] Izin notifikasi disetujui');
     }
+
+    try {
+      await _localNotifications
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+    } catch (_) {}
 
     // 2. Setup Local Notifications untuk pop-up banner saat foreground
     const androidInit = AndroidInitializationSettings('@drawable/ic_notification');
@@ -226,10 +268,12 @@ class FcmService {
       },
     );
 
-    // Buat Notification Channel di Android
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(_channel);
+    // Buat Notification Channel di Android & bersihkan channel lama tanpa sound kustom
+    final androidImplementation = _localNotifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    await androidImplementation?.deleteNotificationChannel(channelId: 'floafinwatch_channel');
+    await androidImplementation?.deleteNotificationChannel(channelId: 'floafinwatch_custom_channel');
+    await androidImplementation?.createNotificationChannel(_channel);
 
     // 3. Ambil dan kirim token ke server
     await registerTokenToServer();
@@ -281,6 +325,18 @@ class FcmService {
         } catch (e) {
           debugPrint('[FCM Foreground] Error updating widget: $e');
         }
+
+        // Sinkronisasi realtime layar dalam aplikasi (Dashboard, Payouts, Transactions)
+        try {
+          ref.read(authNotifierProvider.notifier).refreshProfile();
+          ref.read(dashboardNotifierProvider.notifier).loadData(isRefresh: true);
+          ref.read(realtimeSyncTriggerProvider.notifier).trigger();
+          ref.invalidate(transactionsProvider);
+          ref.invalidate(payoutsProvider);
+          debugPrint('[FCM Foreground] Auto-sync layar in-app berhasil dipicu.');
+        } catch (e) {
+          debugPrint('[FCM Foreground] Catatan refresh Riverpod: $e');
+        }
       }
 
       // Tampilkan banner notifikasi lokal jika diizinkan preferensi pengguna
@@ -321,11 +377,13 @@ class FcmService {
           body: bodyStr,
           notificationDetails: const NotificationDetails(
             android: AndroidNotificationDetails(
-              'floafinwatch_channel',
+              'floafinwatch_v2_channel',
               'Notifikasi Payout & Transaksi F Loafinwatch',
               channelDescription: 'Saluran notifikasi untuk update payout dan transaksi developer realtime',
               importance: Importance.max,
               priority: Priority.high,
+              playSound: true,
+              sound: RawResourceAndroidNotificationSound('floafinwatch'),
               icon: '@drawable/ic_notification',
               largeIcon: DrawableResourceAndroidBitmap('@mipmap/floafinwatch'),
               color: Color(0xFF0284C7),

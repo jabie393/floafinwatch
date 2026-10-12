@@ -44,13 +44,19 @@ void main() async {
         _ => ThemeMode.system,
       };
     }
-    final isDark = switch (themeModeStr) {
-      'dark' => true,
-      'light' => false,
-      _ => ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark,
-    };
     await HomeWidget.saveWidgetData<String>('theme_mode', themeModeStr);
-    await HomeWidget.saveWidgetData<bool>('is_dark_theme', isDark);
+    bool? isDarkArg;
+    if (themeModeStr == 'dark') {
+      isDarkArg = true;
+      await HomeWidget.saveWidgetData<bool>('is_dark_theme', true);
+      await storage.saveString('last_resolved_is_dark', 'true');
+    } else if (themeModeStr == 'light') {
+      isDarkArg = false;
+      await HomeWidget.saveWidgetData<bool>('is_dark_theme', false);
+      await storage.saveString('last_resolved_is_dark', 'false');
+    } else {
+      isDarkArg = await HomeWidget.getWidgetData<bool>('is_dark_theme');
+    }
 
     final token = await storage.getToken();
     if (token == null || token.isEmpty) {
@@ -60,7 +66,7 @@ void main() async {
       const channel = MethodChannel('com.example.floafinwatch/app_settings');
       await channel.invokeMethod('updateWidgetPreviews', {
         'theme_mode': themeModeStr,
-        'is_dark': isDark,
+        'is_dark': isDarkArg,
       });
     }
   } catch (_) {

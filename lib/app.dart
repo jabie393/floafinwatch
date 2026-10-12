@@ -10,6 +10,7 @@ import 'features/auth/presentation/auth_notifier.dart';
 import 'services/fcm_service.dart';
 
 import 'services/widget_service.dart';
+import 'core/storage/secure_storage_service.dart';
 
 class LoafinwatchApp extends ConsumerStatefulWidget {
   const LoafinwatchApp({super.key});
@@ -29,6 +30,18 @@ class _LoafinwatchAppState extends ConsumerState<LoafinwatchApp>
     _handleInitialUri();
     _widgetSubscription = HomeWidget.widgetClicked.listen(_handleWidgetLaunch);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final isDark = View.of(context).platformDispatcher.platformBrightness == Brightness.dark;
+        HomeWidget.saveWidgetData<bool>('is_system_dark', isDark);
+        final themeMode = ref.read(themeModeProvider);
+        final shouldBeDark = switch (themeMode) {
+          ThemeMode.dark => true,
+          ThemeMode.light => false,
+          ThemeMode.system => isDark,
+        };
+        HomeWidget.saveWidgetData<bool>('is_dark_theme', shouldBeDark);
+        ref.read(secureStorageServiceProvider).saveString('last_resolved_is_dark', shouldBeDark.toString());
+      }
       ref.read(fcmServiceProvider).initialize(
         onNavigate: (route) {
           final authState = ref.read(authNotifierProvider);
@@ -55,9 +68,15 @@ class _LoafinwatchAppState extends ConsumerState<LoafinwatchApp>
   @override
   void didChangePlatformBrightness() {
     super.didChangePlatformBrightness();
-    final themeMode = ref.read(themeModeProvider);
-    if (themeMode == ThemeMode.system) {
-      ref.read(widgetServiceProvider).reRenderWidgets();
+    if (mounted) {
+      final isDark = View.of(context).platformDispatcher.platformBrightness == Brightness.dark;
+      HomeWidget.saveWidgetData<bool>('is_system_dark', isDark);
+      final themeMode = ref.read(themeModeProvider);
+      if (themeMode == ThemeMode.system) {
+        HomeWidget.saveWidgetData<bool>('is_dark_theme', isDark);
+        ref.read(secureStorageServiceProvider).saveString('last_resolved_is_dark', isDark.toString());
+        ref.read(widgetServiceProvider).reRenderWidgets();
+      }
     }
   }
 

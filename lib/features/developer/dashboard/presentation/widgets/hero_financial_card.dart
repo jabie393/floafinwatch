@@ -290,36 +290,69 @@ class HeroFinancialCard extends StatelessWidget {
 
               // Info 2: Menunggu Payout (Kanan)
               Expanded(
-                child: _buildBottomMetric(
-                  icon: Icons.schedule_rounded,
-                  iconColor: amberColor,
-                  iconBgColor: isDark
-                      ? const Color(0xFFB45309).withValues(alpha: 0.25)
-                      : const Color(0xFFFEF3C7),
-                  label: 'Menunggu Payout',
-                  amount: summary.pendingPayout,
-                  amountColor: amberColor,
-                  subWidget: Text(
-                    summary.pendingPayout > 0
-                        ? (summary.waitingConfirmationCount > 0 &&
-                                summary.waitingPayoutCount > 0
-                            ? '${summary.waitingPayoutCount} pending, ${summary.waitingConfirmationCount} konfirmasi'
-                            : (summary.waitingConfirmationCount > 0
-                                ? '${summary.waitingConfirmationCount} perlu konfirmasi'
-                                : '${summary.unpaidPayoutCount} tagihan pending'))
-                        : 'Dana belum dicairkan',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                      color: isDark
-                          ? AppColors.textMutedDark
-                          : AppColors.textMutedLight,
+                child: () {
+                  final waitingConfirm = summary.waitingConfirmationCount;
+                  final waitingPayout = summary.waitingPayoutCount;
+                  final rejectedCount = summary.rejectedPayoutCount;
+
+                  final IconData payoutIcon;
+                  final Color payoutColor;
+                  final Color payoutBgColor;
+
+                  if (waitingConfirm > 0 && (rejectedCount > 0 || waitingPayout > 0)) {
+                    payoutIcon = Icons.notifications_active_rounded;
+                    payoutColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
+                    payoutBgColor = isDark ? const Color(0x330284C7) : const Color(0xFFE0EDFB);
+                  } else if (waitingConfirm > 0) {
+                    payoutIcon = Icons.pending_actions_rounded;
+                    payoutColor = isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7);
+                    payoutBgColor = isDark ? const Color(0x330284C7) : const Color(0xFFE0EDFB);
+                  } else if (rejectedCount > 0) {
+                    payoutIcon = Icons.replay_circle_filled_rounded;
+                    payoutColor = isDark ? const Color(0xFFFB7185) : const Color(0xFFE11D48);
+                    payoutBgColor = isDark ? const Color(0x33F43F5E) : const Color(0xFFFFE4E6);
+                  } else if (waitingPayout > 0) {
+                    payoutIcon = Icons.access_time_filled_rounded;
+                    payoutColor = isDark ? const Color(0xFFFBBF24) : const Color(0xFFE2782A);
+                    payoutBgColor = isDark ? const Color(0x33F59E0B) : const Color(0xFFFFEAD8);
+                  } else {
+                    payoutIcon = Icons.check_circle_outline_rounded;
+                    payoutColor = isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
+                    payoutBgColor = isDark ? const Color(0x26334155) : const Color(0xFFF1F5F9);
+                  }
+
+                  return _buildBottomMetric(
+                    icon: payoutIcon,
+                    iconColor: payoutColor,
+                    iconBgColor: payoutBgColor,
+                    label: 'Menunggu Payout',
+                    amount: summary.pendingPayout,
+                    amountColor: summary.pendingPayout > 0 ? payoutColor : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+                    subWidget: Text(
+                      summary.pendingPayout > 0
+                          ? (rejectedCount > 0 && (waitingConfirm > 0 || waitingPayout > 0)
+                              ? '$rejectedCount bayar ulang · ${(waitingConfirm + waitingPayout)} antre'
+                              : (rejectedCount > 0
+                                  ? '$rejectedCount perlu bayar ulang'
+                                  : (waitingConfirm > 0 && waitingPayout > 0
+                                      ? '$waitingPayout pending, $waitingConfirm konfirmasi'
+                                      : (waitingConfirm > 0
+                                          ? '$waitingConfirm perlu konfirmasi'
+                                          : '${summary.unpaidPayoutCount} tagihan pending'))))
+                          : 'Dana belum dicairkan',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: isDark
+                            ? AppColors.textMutedDark
+                            : AppColors.textMutedLight,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  isDark: isDark,
-                ),
+                    isDark: isDark,
+                  );
+                }(),
               ),
             ],
           ),

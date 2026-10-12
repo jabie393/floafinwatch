@@ -72,9 +72,37 @@ class WidgetService {
       if (appTheme == 'dark') return true;
       if (appTheme == 'light') return false;
 
-      return ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark;
+      // 1. Ambil nilai is_dark_theme dari SharedPreferences (HomeWidget)
+      final savedIsDark = await HomeWidget.getWidgetData<bool>('is_dark_theme');
+      if (savedIsDark != null) {
+        return savedIsDark;
+      }
+
+      // 2. Ambil nilai is_system_dark dari Android native SharedPreferences
+      final isSystemDark = await HomeWidget.getWidgetData<bool>('is_system_dark');
+      if (isSystemDark != null) {
+        return isSystemDark;
+      }
+
+      final secSaved = await storage.getString('last_resolved_is_dark');
+      if (secSaved != null) {
+        return secSaved == 'true';
+      }
+
+      final isBackgroundIsolate = ui.PlatformDispatcher.instance.views.isEmpty;
+      if (!isBackgroundIsolate) {
+        return ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark;
+      }
+
+      return true;
     } catch (_) {
-      return ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark;
+      try {
+        final saved = await HomeWidget.getWidgetData<bool>('is_dark_theme');
+        if (saved != null) return saved;
+        final isSystemDark = await HomeWidget.getWidgetData<bool>('is_system_dark');
+        if (isSystemDark != null) return isSystemDark;
+      } catch (_) {}
+      return true;
     }
   }
 
@@ -85,6 +113,7 @@ class WidgetService {
       'light' => false,
       _ => ui.PlatformDispatcher.instance.platformBrightness == ui.Brightness.dark,
     };
+    await storage.saveString('last_resolved_is_dark', isDark.toString());
     await HomeWidget.saveWidgetData<String>('theme_mode', themeModeStr);
     await HomeWidget.saveWidgetData<bool>('is_dark_theme', isDark);
     try {
@@ -197,12 +226,20 @@ class WidgetService {
     await HomeWidget.saveWidgetData<String>('payout_amount_str', formatWidgetRupiah(data.summary.pendingPayout));
 
     final String payoutFooterStr;
-    if (data.summary.waitingConfirmationCount > 0 && data.summary.waitingPayoutCount > 0) {
-      payoutFooterStr = '${data.summary.waitingConfirmationCount} konfirmasi · ${data.summary.waitingPayoutCount} antre';
-    } else if (data.summary.waitingConfirmationCount > 0) {
-      payoutFooterStr = data.summary.waitingConfirmationCount == 1 ? 'Perlu konfirmasi' : '${data.summary.waitingConfirmationCount} perlu konfirmasi';
-    } else if (data.summary.waitingPayoutCount > 0) {
-      payoutFooterStr = data.summary.waitingPayoutCount == 1 ? 'Menunggu transfer' : '${data.summary.waitingPayoutCount} menunggu transfer';
+    final waitingConfirm = data.summary.waitingConfirmationCount;
+    final waitingPayout = data.summary.waitingPayoutCount;
+    final rejectedCount = data.summary.rejectedPayoutCount;
+
+    if (waitingConfirm > 0 && (rejectedCount > 0 || waitingPayout > 0)) {
+      payoutFooterStr = '$waitingConfirm konfirmasi · ${(rejectedCount + waitingPayout)} antre';
+    } else if (waitingConfirm > 0) {
+      payoutFooterStr = waitingConfirm == 1 ? 'Perlu konfirmasi' : '$waitingConfirm perlu konfirmasi';
+    } else if (rejectedCount > 0 && waitingPayout > 0) {
+      payoutFooterStr = '$rejectedCount bayar ulang · $waitingPayout antre';
+    } else if (rejectedCount > 0) {
+      payoutFooterStr = rejectedCount == 1 ? '1 perlu bayar ulang' : '$rejectedCount perlu bayar ulang';
+    } else if (waitingPayout > 0) {
+      payoutFooterStr = waitingPayout == 1 ? 'Menunggu transfer' : '$waitingPayout menunggu transfer';
     } else {
       payoutFooterStr = 'Tidak ada antrean';
     }

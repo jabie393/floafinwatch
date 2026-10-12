@@ -118,6 +118,29 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun onResume() {
         super.onResume()
+        syncSystemNightMode()
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        syncSystemNightMode()
+    }
+
+    private fun syncSystemNightMode() {
+        try {
+            val isDark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+            val prefs = getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+            val themeMode = prefs.getString("theme_mode", "system") ?: "system"
+            val shouldBeDark = when (themeMode) {
+                "dark" -> true
+                "light" -> false
+                else -> isDark
+            }
+            prefs.edit()
+                .putBoolean("is_system_dark", isDark)
+                .putBoolean("is_dark_theme", shouldBeDark)
+                .apply()
+        } catch (_: Throwable) {}
     }
 
     private fun updateAllWidgetPreviews(themeModeArg: String? = null, isDarkArg: Boolean? = null) {
@@ -186,6 +209,7 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        syncSystemNightMode()
         
         // Unlock high refresh rate (90Hz / 120Hz / 144Hz) on Android devices
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
