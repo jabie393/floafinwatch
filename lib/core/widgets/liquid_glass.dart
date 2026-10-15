@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:floafinwatch/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 
 /// Apple iOS Liquid Glass container powered by liquid_glass_easy
 /// Features:
@@ -43,16 +42,21 @@ class LiquidGlass extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // In dark mode: deep obsidian crystal tint; in light mode: pristine crystal
-    final glassColor = isDark
-        ? (tintColor ?? const Color(0xFF1E293B)).withValues(alpha: 0.65)
-        : (tintColor ?? Colors.white).withValues(alpha: 0.75);
+    final effectiveOpacity = opacity.clamp(0.0, 1.0);
+    final Color glassColor;
+    if (tintColor != null) {
+      glassColor = tintColor!;
+    } else {
+      glassColor = isDark
+          ? const Color(0xFF1E293B).withValues(alpha: effectiveOpacity)
+          : Colors.white.withValues(alpha: effectiveOpacity);
+    }
 
     // Subtle, delicate hairline border color (prevents harsh thick lines)
     final effectiveBorderColor = borderColor ??
         (isDark
-            ? Colors.white.withValues(alpha: 0.13)
-            : Colors.white.withValues(alpha: 0.65));
+            ? Colors.white.withValues(alpha: 0.22)
+            : Colors.white.withValues(alpha: 0.70));
 
     Widget content = padding != null ? Padding(padding: padding!, child: child) : child;
 
@@ -67,68 +71,46 @@ class LiquidGlass extends StatelessWidget {
       );
     }
 
-    // Shader shape with zero internal border width to prevent uneven double-stroking
-    final shape = LiquidGlassShape.continuousRoundedRectangle(
-      cornerRadius: borderRadius,
-      borderWidth: 0.0,
-      borderType: const OpticalBorder(borderSaturation: 0, ambientIntensity: 0),
-    );
-
-    final style = LiquidGlassStyle(
-      shape: shape,
-      appearance: LiquidGlassAppearance(
+    Widget glassContainer = Container(
+      decoration: BoxDecoration(
         color: glassColor,
-        blur: LiquidGlassBlur(sigmaX: blur, sigmaY: blur),
-        shadow: customShadows == null
-            ? LiquidGlassShadow(
-                blur: 16,
-                opacity: isDark ? 0.35 : 0.08,
-                color: Colors.black,
-                offset: const Offset(0, 6),
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: hasSpecularBorder
+            ? Border.all(
+                color: effectiveBorderColor,
+                width: 0.85,
               )
             : null,
+        boxShadow: customShadows ??
+            [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.32 : 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 5),
+              ),
+            ],
       ),
-      refraction: LiquidGlassRefraction(
-        distortion: 0.10,
-        distortionWidth: 24,
-        chromaticAberration: hasChromaticAberration ? 0.003 : 0.0,
-      ),
-    );
-
-    Widget lens = LiquidGlassLens(
-      style: style,
       child: content,
     );
 
-    // Single, uniform, ultra-fine 0.85px hairline glass border across all 4 edges (atas, kanan, bawah, kiri)
-    if (hasSpecularBorder) {
-      lens = Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
-          border: Border.all(
-            color: effectiveBorderColor,
-            width: 0.85,
+    if (blur > 0) {
+      glassContainer = ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: blur.clamp(0.0, 32.0),
+            sigmaY: blur.clamp(0.0, 32.0),
           ),
+          child: glassContainer,
         ),
-        child: lens,
-      );
-    }
-
-    if (customShadows != null) {
-      lens = Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
-          boxShadow: customShadows,
-        ),
-        child: lens,
       );
     }
 
     if (margin != null) {
-      lens = Padding(padding: margin!, child: lens);
+      glassContainer = Padding(padding: margin!, child: glassContainer);
     }
 
-    return lens;
+    return glassContainer;
   }
 }
 
@@ -415,7 +397,7 @@ class LiquidGlassModalSheet extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
         child: Container(
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * maxHeightRatio,

@@ -270,7 +270,7 @@ class WidgetService {
       final val = chartValues7[i];
       final ratio = maxVal > 0 ? (val / maxVal).clamp(0.18, 1.0) : 0.2;
       final isPeak = i == peakIdx && maxVal > 0;
-      final heightDp = (58 * ratio).clamp(16.0, 62.0);
+      final heightDp = (58 * ratio).clamp(22.0, 60.0);
       await HomeWidget.saveWidgetData<double>('trend_pillar_${i + 1}_height', heightDp);
       await HomeWidget.saveWidgetData<bool>('trend_pillar_${i + 1}_is_peak', isPeak);
     }

@@ -123,8 +123,20 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
             bottom: bottomInset > 0 ? bottomInset + 4 : 16,
             child: LiquidGlass(
               borderRadius: 40,
-              blur: 24,
-              opacity: 0.85,
+              blur: 12,
+              tintColor: isDark
+                  ? const Color(0xFF0F172A).withValues(alpha: 0.65)
+                  : Colors.white.withValues(alpha: 0.65),
+              borderColor: isDark
+                  ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                  : Colors.white.withValues(alpha: 0.85),
+              customShadows: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
               child: SizedBox(
                 height: 56,
@@ -163,48 +175,25 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                                   vertical: 1,
                                 ),
                                 decoration: BoxDecoration(
-                                  gradient: isDark
-                                      ? const LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Color(0xFF3B82F6),
-                                            Color(0xFF2563EB),
-                                          ],
-                                        )
-                                      : LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            const Color(0xFFEFF6FF),
-                                            const Color(0xFFDBEAFE)
-                                                .withValues(alpha: 0.95),
-                                          ],
-                                        ),
+                                  color: isDark
+                                      ? const Color(0xFF2563EB).withValues(alpha: 0.25)
+                                      : const Color(0xFFEFF6FF).withValues(alpha: 0.90),
                                   borderRadius: BorderRadius.circular(26),
                                   border: Border.all(
                                     color: isDark
-                                        ? Colors.white.withValues(alpha: 0.28)
-                                        : Colors.white.withValues(alpha: 0.95),
-                                    width: 1.0,
+                                        ? const Color(0xFF60A5FA).withValues(alpha: 0.40)
+                                        : const Color(0xFFDBEAFE),
+                                    width: 0.85,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(
-                                        0xFF2563EB,
-                                      ).withValues(alpha: isDark ? 0.32 : 0.16),
+                                      color: isDark
+                                          ? const Color(0xFF2563EB).withValues(alpha: 0.20)
+                                          : Colors.black.withValues(alpha: 0.04),
                                       blurRadius: 6,
                                       spreadRadius: 0,
                                       offset: const Offset(0, 1.5),
                                     ),
-                                    if (!isDark)
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.03,
-                                        ),
-                                        blurRadius: 3,
-                                        offset: const Offset(0, 1),
-                                      ),
                                   ],
                                 ),
                               ),
@@ -305,7 +294,7 @@ class _FloatingNavBarItem extends StatelessWidget {
     final inactiveColor = isDark
         ? AppColors.textMutedDark
         : AppColors.textSecondaryLight;
-    final activeTextColor = isDark ? Colors.white : AppColors.primary;
+    final activeTextColor = isDark ? const Color(0xFF60A5FA) : AppColors.primary;
     final itemColor =
         Color.lerp(inactiveColor, activeTextColor, progress) ?? inactiveColor;
     final isSelected = progress >= 0.5;

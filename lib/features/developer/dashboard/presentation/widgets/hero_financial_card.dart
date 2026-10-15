@@ -26,7 +26,6 @@ class HeroFinancialCard extends StatelessWidget {
     final emeraldColor = isDark
         ? AppColors.emeraldDarkText
         : AppColors.emeraldText;
-    final amberColor = isDark ? AppColors.amberDarkText : AppColors.amberText;
     final indigoColor = isDark
         ? AppColors.indigoDarkText
         : AppColors.indigoText;
