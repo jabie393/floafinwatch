@@ -3,7 +3,7 @@
     <!-- Adaptive Preview Tokens (Night / Dark Mode Overrides) -->
     <color name="widget_preview_bg_start">#101826</color>
     <color name="widget_preview_bg_end">#0B111B</color>
-    <color name="widget_preview_stroke">#00000000</color>
+    <color name="widget_preview_stroke">#3838BDF8</color>
     <color name="widget_preview_text_primary">#F8FAFC</color>
     <color name="widget_preview_text_secondary">#94A3B8</color>
     <color name="widget_preview_text_muted">#64748B</color>

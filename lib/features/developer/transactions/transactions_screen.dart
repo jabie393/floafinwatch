@@ -911,7 +911,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: isDark
-                                ? Colors.white.withValues(alpha: 0.08)
+                                ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
                                 : Colors.black.withValues(alpha: 0.06),
                             width: 1,
                           ),
@@ -952,7 +952,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
                                       color: isDark
-                                          ? Colors.white.withValues(alpha: 0.12)
+                                          ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
                                           : Colors.black.withValues(alpha: 0.08),
                                       width: 0.85,
                                     ),

@@ -35,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
-        android:text="Rp 0"
+        android:text="Rp 1.450.000"
         android:textColor="@color/widget_dark_text_primary"
         android:textSize="22sp"
         android:textStyle="bold" />
@@ -63,7 +63,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
-            android:text="Rp 0 cair"
+            android:text="Rp 850 rb cair"
             android:textColor="@color/widget_dark_hak_cair"
             android:textSize="11sp"
             android:textStyle="bold" />

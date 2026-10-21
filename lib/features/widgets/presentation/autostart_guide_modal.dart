@@ -478,7 +478,7 @@ class _AutostartGuideModalState extends State<AutostartGuideModal>
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.1)
+                  ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
                   : Colors.black.withValues(alpha: 0.08),
             ),
             boxShadow: [

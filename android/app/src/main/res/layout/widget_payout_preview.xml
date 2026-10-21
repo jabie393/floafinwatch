@@ -41,7 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
-        android:text="Rp 0"
+        android:text="Rp 500.000"
         android:textColor="@color/widget_light_text_primary"
         android:textSize="22sp"
         android:textStyle="bold" />
@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:text="Tidak ada antrean"
+            android:text="1 antrean pending"
             android:textColor="@color/widget_light_text_muted"
             android:textSize="11sp"
             android:textStyle="bold" />

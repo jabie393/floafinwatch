@@ -122,7 +122,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       color: Colors.white.withValues(alpha: isDark ? 0.12 : 0.65),
                                       borderRadius: BorderRadius.circular(isUltraCompact ? 16 : 24),
                                       border: Border.all(
-                                        color: Colors.white.withValues(alpha: isDark ? 0.2 : 0.8),
+                                        color: isDark
+                                            ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                                            : Colors.white.withValues(alpha: 0.8),
                                         width: 1.5,
                                       ),
                                       boxShadow: [
@@ -198,7 +200,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         color: Colors.white.withValues(alpha: isDark ? 0.08 : 0.65),
                                         borderRadius: BorderRadius.circular(26),
                                         border: Border.all(
-                                          color: Colors.white.withValues(alpha: isDark ? 0.16 : 0.80),
+                                          color: isDark
+                                              ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                                              : Colors.white.withValues(alpha: 0.80),
                                           width: 1.2,
                                         ),
                                         boxShadow: [
@@ -334,8 +338,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 enabledBorder: OutlineInputBorder(
                                                   borderRadius: BorderRadius.circular(16),
                                                   borderSide: BorderSide(
-                                                    color: Colors.white
-                                                        .withValues(alpha: isDark ? 0.12 : 0.70),
+                                                    color: isDark
+                                                        ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                                                        : Colors.white.withValues(alpha: 0.70),
                                                     width: 1,
                                                   ),
                                                 ),
@@ -415,8 +420,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 enabledBorder: OutlineInputBorder(
                                                   borderRadius: BorderRadius.circular(16),
                                                   borderSide: BorderSide(
-                                                    color: Colors.white
-                                                        .withValues(alpha: isDark ? 0.12 : 0.70),
+                                                    color: isDark
+                                                        ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                                                        : Colors.white.withValues(alpha: 0.70),
                                                     width: 1,
                                                   ),
                                                 ),

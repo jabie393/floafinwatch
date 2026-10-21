@@ -575,9 +575,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
                     color: Colors.white.withValues(alpha: isDark ? 0.06 : 0.65),
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(
-                      color: Colors.white.withValues(
-                        alpha: isDark ? 0.12 : 0.75,
-                      ),
+                      color: isDark
+                          ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                          : Colors.white.withValues(alpha: 0.75),
                       width: 1.2,
                     ),
                   ),
@@ -668,7 +668,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
         color: Colors.white.withValues(alpha: isDark ? 0.06 : 0.60),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: isDark ? 0.12 : 0.75),
+          color: isDark
+              ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+              : Colors.white.withValues(alpha: 0.75),
           width: 1,
         ),
       ),
@@ -918,9 +920,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
                                     ),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: isDark ? 0.15 : 0.7,
-                                      ),
+                                      color: isDark
+                                          ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                                          : Colors.white.withValues(alpha: 0.7),
                                       width: 1,
                                     ),
                                   ),
@@ -964,9 +966,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
                                 isUltraCompact ? 16 : 24,
                               ),
                               border: Border.all(
-                                color: Colors.white.withValues(
-                                  alpha: isDark ? 0.2 : 0.8,
-                                ),
+                                color: isDark
+                                    ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                                    : Colors.white.withValues(alpha: 0.8),
                                 width: 1.5,
                               ),
                               boxShadow: [
@@ -1067,9 +1069,10 @@ class _PinScreenState extends ConsumerState<PinScreen>
                                       : _isSuccess
                                       ? const Color(0xFF0EA5E9)
                                             .withValues(alpha: 0.8)
-                                      : Colors.white.withValues(
-                                          alpha: isDark ? 0.2 : 0.8,
-                                        ),
+                                      : (isDark
+                                          ? const Color(0xFF38BDF8)
+                                                .withValues(alpha: 0.18)
+                                          : Colors.white.withValues(alpha: 0.8)),
                                   width: 1.5,
                                 ),
                                 boxShadow: [
@@ -1380,7 +1383,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
             shape: BoxShape.circle,
             color: Colors.white.withValues(alpha: isDark ? 0.12 : 0.65),
             border: Border.all(
-              color: Colors.white.withValues(alpha: isDark ? 0.22 : 0.85),
+              color: isDark
+                  ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                  : Colors.white.withValues(alpha: 0.85),
               width: 1.5,
             ),
             boxShadow: [
@@ -1428,7 +1433,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
             shape: BoxShape.circle,
             color: Colors.white.withValues(alpha: isDark ? 0.10 : 0.55),
             border: Border.all(
-              color: Colors.white.withValues(alpha: isDark ? 0.18 : 0.75),
+              color: isDark
+                  ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
+                  : Colors.white.withValues(alpha: 0.75),
               width: 1.2,
             ),
             boxShadow: [
