@@ -71,9 +71,8 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 16),
 
               // Liquid Glass User Info Card
-              LiquidGlass(
+              LiquidGlassCard(
                 borderRadius: 22,
-                blur: 18,
                 padding: const EdgeInsets.all(18),
                 child: Row(
                   children: [
@@ -189,9 +188,8 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 10),
 
               // Liquid Glass Theme Selector Container
-              LiquidGlass(
+              LiquidGlassCard(
                 borderRadius: 20,
-                blur: 18,
                 padding: const EdgeInsets.all(6),
                 child: Column(
                   children: [
@@ -262,9 +260,8 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              LiquidGlass(
+              LiquidGlassCard(
                 borderRadius: 20,
-                blur: 18,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 12,
@@ -285,9 +282,8 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              LiquidGlass(
+              LiquidGlassCard(
                 borderRadius: 20,
-                blur: 18,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 12,
@@ -374,9 +370,8 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              LiquidGlass(
+              LiquidGlassCard(
                 borderRadius: 20,
-                blur: 18,
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
