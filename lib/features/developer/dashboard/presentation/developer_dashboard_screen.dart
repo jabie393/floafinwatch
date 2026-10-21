@@ -186,7 +186,7 @@ class _DeveloperDashboardScreenState extends ConsumerState<DeveloperDashboardScr
           color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+            color: isDark ? const Color(0xFF38BDF8).withValues(alpha: 0.18) : AppColors.borderLight,
           ),
         ),
         child: Column(
@@ -337,7 +337,7 @@ class _DeveloperDashboardScreenState extends ConsumerState<DeveloperDashboardScr
               color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                color: isDark ? const Color(0xFF38BDF8).withValues(alpha: 0.18) : AppColors.borderLight,
               ),
             ),
             child: Center(
@@ -396,14 +396,11 @@ class _DeveloperDashboardScreenState extends ConsumerState<DeveloperDashboardScr
         color: Colors.white,
         height: 1.3,
       ),
-      child: InkWell(
+      child: LiquidGlassCard(
+        borderRadius: 18,
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(14),
         onTap: () => context.go('/dev/transactions'),
-        borderRadius: BorderRadius.circular(18),
-        child: LiquidGlass(
-          borderRadius: 18,
-          blur: 16,
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(14),
         child: Row(
           children: [
             Container(
@@ -477,9 +474,8 @@ class _DeveloperDashboardScreenState extends ConsumerState<DeveloperDashboardScr
           ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildRecentPayoutsSection(
     BuildContext context,
@@ -540,7 +536,7 @@ class _DeveloperDashboardScreenState extends ConsumerState<DeveloperDashboardScr
               color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                color: isDark ? const Color(0xFF38BDF8).withValues(alpha: 0.18) : AppColors.borderLight,
               ),
             ),
             child: Center(
@@ -680,15 +676,12 @@ class _DeveloperDashboardScreenState extends ConsumerState<DeveloperDashboardScr
   ) {
     final statusConfig = _getPayoutStatusConfig(po.status, isDark);
 
-    return InkWell(
+    return LiquidGlassCard(
+      borderRadius: 18,
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(14),
       onTap: () => context.go('/dev/payouts'),
-      borderRadius: BorderRadius.circular(18),
-      child: LiquidGlass(
-        borderRadius: 18,
-        blur: 16,
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(14),
-        child: Row(
+      child: Row(
           children: [
             Container(
               width: 36,
@@ -801,7 +794,6 @@ class _DeveloperDashboardScreenState extends ConsumerState<DeveloperDashboardScr
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }

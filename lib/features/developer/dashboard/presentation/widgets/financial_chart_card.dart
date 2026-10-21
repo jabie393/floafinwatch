@@ -71,9 +71,8 @@ class FinancialChartCard extends ConsumerWidget {
         ? 100000.0
         : chartData.values.reduce((a, b) => a > b ? a : b) * 1.2;
 
-    return LiquidGlass(
+    return LiquidGlassCard(
       borderRadius: 24,
-      blur: 20,
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

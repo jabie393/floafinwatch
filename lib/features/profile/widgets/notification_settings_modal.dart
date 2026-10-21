@@ -138,7 +138,7 @@ class _NotificationSettingsModalState extends State<NotificationSettingsModal> {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isDark
-                              ? Colors.white.withValues(alpha: 0.1)
+                              ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
                               : Colors.black.withValues(alpha: 0.06),
                           width: 1,
                         ),
@@ -265,7 +265,7 @@ class _NotificationSettingTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
+              ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
               : Colors.black.withValues(alpha: 0.06),
           width: 1,
         ),

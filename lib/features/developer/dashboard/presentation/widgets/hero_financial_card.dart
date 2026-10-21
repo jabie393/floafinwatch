@@ -20,7 +20,7 @@ class HeroFinancialCard extends StatelessWidget {
 
     final glassTintColor = isDark ? const Color(0xFF1E293B) : Colors.white;
     final glassBorderColor = isDark
-        ? Colors.white.withValues(alpha: 0.15)
+        ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
         : Colors.white.withValues(alpha: 0.85);
 
     final emeraldColor = isDark
@@ -30,11 +30,10 @@ class HeroFinancialCard extends StatelessWidget {
         ? AppColors.indigoDarkText
         : AppColors.indigoText;
 
-    return LiquidGlass(
+    return LiquidGlassCard(
       borderRadius: 24,
       tintColor: glassTintColor,
       borderColor: glassBorderColor,
-      blur: 16,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

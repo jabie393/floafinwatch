@@ -52,10 +52,10 @@ class LiquidGlass extends StatelessWidget {
           : Colors.white.withValues(alpha: effectiveOpacity);
     }
 
-    // Subtle, delicate hairline border color (prevents harsh thick lines)
+    // Subtle, delicate hairline border color matching navigation outline in dark mode
     final effectiveBorderColor = borderColor ??
         (isDark
-            ? Colors.white.withValues(alpha: 0.22)
+            ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
             : Colors.white.withValues(alpha: 0.70));
 
     Widget content = padding != null ? Padding(padding: padding!, child: child) : child;
@@ -230,7 +230,7 @@ class LiquidGlassCard extends StatelessWidget {
 
     final effectiveBorderColor = borderColor ??
         (isDark
-            ? Colors.white.withValues(alpha: 0.13)
+            ? const Color(0xFF38BDF8).withValues(alpha: 0.18)
             : Colors.white.withValues(alpha: 0.65));
 
     Widget content = padding != null ? Padding(padding: padding!, child: child) : child;
@@ -410,7 +410,7 @@ class LiquidGlassModalSheet extends StatelessWidget {
             border: Border(
               top: BorderSide(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.16)
+                    ? const Color(0xFF38BDF8).withValues(alpha: 0.20)
                     : Colors.white.withValues(alpha: 0.85),
                 width: 1.2,
               ),
