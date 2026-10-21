@@ -142,13 +142,20 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
     bool shouldShowBanner = true;
     try {
-      if (isTransaction) {
-        final txEnabled = await storage.isTransactionNotificationEnabled();
-        if (!txEnabled) shouldShowBanner = false;
+      final txEnabled = await storage.isTransactionNotificationEnabled();
+      final payoutEnabled = await storage.isPayoutNotificationEnabled();
+
+      // 1. Jika semua notifikasi dimatikan (Master toggle OFF)
+      if (!txEnabled && !payoutEnabled) {
+        shouldShowBanner = false;
       }
-      if (isPayout) {
-        final payoutEnabled = await storage.isPayoutNotificationEnabled();
-        if (!payoutEnabled) shouldShowBanner = false;
+      // 2. Jika kategori transaksi dan notifikasi transaksi dimatikan
+      else if (isTransaction && !txEnabled) {
+        shouldShowBanner = false;
+      }
+      // 3. Jika kategori payout dan notifikasi payout dimatikan
+      else if (isPayout && !payoutEnabled) {
+        shouldShowBanner = false;
       }
     } catch (_) {}
 
@@ -167,8 +174,11 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(FcmService._channel);
 
+      final notifId = (data['tag'] ?? data['order_id'] ?? data['payout_id'] ?? message.messageId)?.hashCode ??
+          (DateTime.now().millisecondsSinceEpoch & 0x7FFFFFFF);
+
       await localNotifications.show(
-        id: message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        id: notifId,
         title: titleStr,
         body: bodyStr,
         notificationDetails: const NotificationDetails(
@@ -361,18 +371,30 @@ class FcmService {
           titleStr.toLowerCase().contains('repay');
 
       bool shouldShowBanner = true;
-      if (isTransaction) {
+      try {
         final txEnabled = await storage.isTransactionNotificationEnabled();
-        if (!txEnabled) shouldShowBanner = false;
-      }
-      if (isPayout) {
         final payoutEnabled = await storage.isPayoutNotificationEnabled();
-        if (!payoutEnabled) shouldShowBanner = false;
-      }
+
+        // 1. Jika semua notifikasi dimatikan (Master toggle OFF)
+        if (!txEnabled && !payoutEnabled) {
+          shouldShowBanner = false;
+        }
+        // 2. Jika kategori transaksi dan notifikasi transaksi dimatikan
+        else if (isTransaction && !txEnabled) {
+          shouldShowBanner = false;
+        }
+        // 3. Jika kategori payout dan notifikasi payout dimatikan
+        else if (isPayout && !payoutEnabled) {
+          shouldShowBanner = false;
+        }
+      } catch (_) {}
 
       if (shouldShowBanner && titleStr.isNotEmpty) {
+        final notifId = (data['tag'] ?? data['order_id'] ?? data['payout_id'] ?? message.messageId)?.hashCode ??
+            (DateTime.now().millisecondsSinceEpoch & 0x7FFFFFFF);
+
         _localNotifications.show(
-          id: message.messageId?.hashCode ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          id: notifId,
           title: titleStr,
           body: bodyStr,
           notificationDetails: const NotificationDetails(
